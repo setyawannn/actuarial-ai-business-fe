@@ -4,6 +4,13 @@
 
 Frontend only uses `analysis_public_id` (`anl_<random>`) for analysis resources. Analysis is private to creator. Admin cannot read another user's analysis. `GET /api/v1/analysis-runs` is source of truth for history screen and returns caller-owned rows only. Non-owner detail/report/sources reads return `404 ANALYSIS_NOT_FOUND`.
 
+Forecast UI:
+- Show 3-year historical summary and 3-year forecast summary from `report_summary`.
+- Display `forecast_confidence` near forecast cards.
+- If confidence is low/unknown/insufficient, label the forecast as qualitative and show data requests.
+- Use `scenario_highlights` for scenario cards.
+- Do not depend on source/data gap internal IDs; use URL/title or array index for rendering keys.
+
 
 Dokumen ini menjelaskan bagaimana backend contract dipetakan ke UI Next.js.
 

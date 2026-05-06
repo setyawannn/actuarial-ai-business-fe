@@ -4,6 +4,19 @@
 
 Frontend only uses `analysis_public_id` (`anl_<random>`) for analysis resources. Analysis is private to creator. Admin cannot read another user's analysis. `GET /api/v1/analysis-runs` is source of truth for history screen and returns caller-owned rows only. Non-owner detail/report/sources reads return `404 ANALYSIS_NOT_FOUND`.
 
+Forecast response:
+- `report_summary.historical_3y_summary`
+- `report_summary.forecast_3y_summary`
+- `report_summary.forecast_confidence`
+- `report_summary.forecast_methods_used`
+- `report_summary.scenario_highlights`
+
+Frontend must treat forecast as evidence-based. If `forecast_confidence` is `Low`, `Unknown`, `partial`, or `insufficient`, show forecast as qualitative guidance, not a precise prediction.
+
+Source payload:
+- `sources.raw_snippet` is capped at 800 characters.
+- `sources` and `data_gaps` do not expose internal numeric IDs.
+
 
 Dokumen ini adalah kontrak implementasi frontend untuk endpoint analysis pada Cubiconia Business Intelligence V1.
 

@@ -4,6 +4,18 @@
 
 Frontend only uses `analysis_public_id` (`anl_<random>`) for analysis resources. Analysis is private to creator. Admin cannot read another user's analysis. `GET /api/v1/analysis-runs` is source of truth for history screen and returns caller-owned rows only. Non-owner detail/report/sources reads return `404 ANALYSIS_NOT_FOUND`.
 
+Forecast additions for `ReportSummary`:
+
+```ts
+historical_3y_summary?: string | null;
+forecast_3y_summary?: string | null;
+forecast_confidence?: string | null;
+forecast_methods_used: string[];
+scenario_highlights: string[];
+```
+
+Source and data gap items do not include internal numeric `id`. Source snippets are capped at 800 characters.
+
 
 Dokumen ini berisi model TypeScript yang bisa langsung diadopsi di frontend.
 
