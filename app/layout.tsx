@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Roboto } from "next/font/google"
+import { Geist_Mono, Roboto } from "next/font/google"
 import { Providers } from "@/app/providers";
 import "./globals.css"
 import { cn } from "@/lib/utils";
