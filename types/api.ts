@@ -53,29 +53,30 @@ export interface MeResponseData {
 
 // Analysis Request Types
 export type AnalysisGoal =
-  | "strategic_review"
-  | "risk_assessment"
-  | "financial_forecast"
+  | "business_health"
+  | "acquisition_risk"
+  | "investment_risk"
+  | "competitor_analysis"
+  | "vendor_risk"
   | "market_entry"
-  | "custom";
+  | "partnership_risk";
 
-export type CompanyType =
-  | "startup"
-  | "sme"
-  | "enterprise"
-  | "public"
-  | "non_profit"
-  | "other";
+export type CompanyType = "private" | "public" | "unknown";
 
 export type ReportLanguage = "id" | "en";
 
 export interface ExternalAnalysisRequest {
   company_name: string;
-  company_type: CompanyType;
-  industry_sector?: string;
+  legal_entity?: string | null;
+  country: string;
+  location?: string | null;
+  industry: string;
+  ticker?: string | null;
+  website?: string | null;
+  company_type?: CompanyType;
   analysis_goal: AnalysisGoal;
-  report_language: ReportLanguage;
-  custom_preferences?: string;
+  language?: ReportLanguage;
+  target_context?: Record<string, unknown>;
 }
 
 // Analysis Response Types

@@ -1,14 +1,16 @@
-import { EmptyState } from "@/components/states";
 import { PageHeader } from "@/components/page-header";
+import { AnalysisRequestForm } from "./analysis-request-form";
 
 export default function NewAnalysisPage() {
   return (
     <div className="space-y-6">
       <PageHeader
         title="New Analysis"
-        description="Layout halaman request analysis sudah siap. Form, schema, dan submit flow akan masuk pada module analysis request."
+        description="Submit a new company analysis request. Fill out the required details to begin the process."
       />
-      <EmptyState />
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <AnalysisRequestForm />
+      </div>
     </div>
   );
 }
