@@ -25,6 +25,11 @@ import {
   SidebarInput,
   SidebarRail,
   SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
 const data = {
@@ -118,7 +123,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} pathname={pathname} />
         <SidebarSeparator />
-        <div className="px-2 py-2">
+        <div className="px-2 py-2 group-data-[collapsible=icon]:hidden">
           <div className="rounded-2xl border border-sidebar-border/70 bg-sidebar-accent/40 p-4 text-sm">
             <div className="flex items-center gap-2 text-sidebar-foreground">
               <SparklesIcon className="size-4" />
@@ -129,29 +134,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </p>
           </div>
         </div>
-        <nav className="px-2 pb-2">
-          <div className="mb-2 px-2 text-xs font-medium text-sidebar-foreground/70">Shortcuts</div>
-          <div className="space-y-1">
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel>Shortcuts</SidebarGroupLabel>
+          <SidebarMenu>
             {data.shortcuts.map((item) => {
               const active = pathname.startsWith(item.url);
 
               return (
-                <Link
-                  key={item.title}
-                  href={item.url}
-                  className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors ${
-                    active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </Link>
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                    <Link href={item.url}>
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               );
             })}
-          </div>
-        </nav>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

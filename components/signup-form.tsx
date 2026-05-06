@@ -71,7 +71,7 @@ export function SignupForm({
         <Field>
           <Button type="submit">Create Account</Button>
         </Field>
-        <FieldSeparator>Or continue with</FieldSeparator>
+        {/* <FieldSeparator>Or continue with</FieldSeparator>
         <Field>
           <Button variant="outline" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -81,11 +81,11 @@ export function SignupForm({
               />
             </svg>
             Sign up with GitHub
-          </Button>
-          <FieldDescription className="px-6 text-center">
+          </Button> */}
+          <FieldDescription className="px-6 text-center mt-4">
             Already have an account? <a href="#">Sign in</a>
           </FieldDescription>
-        </Field>
+        {/* </Field> */}
       </FieldGroup>
     </form>
   )

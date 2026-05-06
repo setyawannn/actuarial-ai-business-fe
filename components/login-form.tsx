@@ -115,7 +115,7 @@ export function LoginForm({
           </Button>
         </Field>
         
-        <FieldSeparator>Or continue with</FieldSeparator>
+        {/* <FieldSeparator>Or continue with</FieldSeparator>
         
         <Field>
           <Button variant="outline" type="button" disabled={loginMutation.isPending}>
@@ -126,14 +126,14 @@ export function LoginForm({
               />
             </svg>
             Login with GitHub
-          </Button>
-          <FieldDescription className="text-center">
+          </Button> */}
+          <FieldDescription className="text-center mt-4">
             Don&apos;t have an account?{" "}
             <a href="/signup" className="underline underline-offset-4">
               Sign up
             </a>
           </FieldDescription>
-        </Field>
+        {/* </Field> */}
       </FieldGroup>
     </form>
   );
