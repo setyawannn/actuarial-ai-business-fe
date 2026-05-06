@@ -32,3 +32,17 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: { message: "Internal server error" } }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ templateId: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const res = await proxyRequest(`/prompt-templates/${resolvedParams.templateId}`, { method: "DELETE" });
+    return await forwardResponse(res);
+  } catch (error) {
+    console.error("Admin Prompt Template DELETE error:", error);
+    return NextResponse.json({ success: false, error: { message: "Internal server error" } }, { status: 500 });
+  }
+}

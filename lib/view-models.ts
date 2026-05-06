@@ -1,50 +1,64 @@
-import { AnalysisRunResult } from "@/types/api";
+import { AnalysisReportDetail, AnalysisRunDetail, AnalysisRunResult } from "@/types/api";
 
 export interface AnalysisOverviewViewModel {
   publicId: string;
   status: string;
   companyName: string;
   goal: string;
-  executiveSummary: string;
+  executiveSummary: string | null;
   keyFindings: string[];
-  historicalSummary: string;
-  forecastSummary: string;
-  forecastConfidence: string;
+  historicalSummary: string | null;
+  forecastSummary: string | null;
+  forecastConfidence: string | null;
   forecastMethods: string[];
   scenarioHighlights: string[];
   scores: {
-    risk: number;
-    confidence: number;
-    dataAvailability: number;
+    overallRiskScore: number | null;
+    confidenceScore: number | null;
+    dataAvailabilityScore: number | null;
   };
-  dataGapsCount: number;
+  createdAt: string | null;
+}
+
+function hasText(value?: string | null) {
+  return Boolean(value && value.trim() && !["n/a", "na", "unknown"].includes(value.trim().toLowerCase()));
 }
 
 export function toAnalysisOverviewViewModel(
-  detail: AnalysisRunResult
+  input: Partial<AnalysisRunResult> & Partial<AnalysisReportDetail> & Partial<AnalysisRunDetail>
 ): AnalysisOverviewViewModel {
+  const reportSummary = input.report_summary ?? null;
+
   return {
-    publicId: detail.analysis_public_id,
-    status: detail.status,
-    companyName: detail.report_summary?.company_name || "Unknown",
-    goal: detail.report_summary?.analysis_goal || "Unknown",
-    executiveSummary:
-      detail.report_summary?.overall_conclusion ??
-      "No conclusion available.",
-    keyFindings: detail.report_summary?.top_findings ?? [],
-    historicalSummary:
-      detail.report_summary?.historical_3y_summary ??
-      "No historical data available.",
-    forecastSummary:
-      detail.report_summary?.forecast_3y_summary ?? "No forecast available.",
-    forecastConfidence: detail.report_summary?.forecast_confidence ?? "N/A",
-    forecastMethods: detail.report_summary?.forecast_methods_used ?? [],
-    scenarioHighlights: detail.report_summary?.scenario_highlights ?? [],
+    publicId: input.analysis_public_id ?? "",
+    status: input.status ?? "unknown",
+    companyName: reportSummary?.company_name ?? "Unknown Company",
+    goal: reportSummary?.analysis_goal ?? input.analysis_goal ?? "unknown",
+    executiveSummary: hasText(reportSummary?.overall_conclusion)
+      ? reportSummary?.overall_conclusion ?? null
+      : null,
+    keyFindings: (reportSummary?.top_findings ?? []).filter(Boolean),
+    historicalSummary: hasText(reportSummary?.historical_3y_summary)
+      ? reportSummary?.historical_3y_summary ?? null
+      : null,
+    forecastSummary: hasText(reportSummary?.forecast_3y_summary)
+      ? reportSummary?.forecast_3y_summary ?? null
+      : null,
+    forecastConfidence: hasText(reportSummary?.forecast_confidence)
+      ? reportSummary?.forecast_confidence ?? null
+      : null,
+    forecastMethods: (reportSummary?.forecast_methods_used ?? []).filter(Boolean),
+    scenarioHighlights: (reportSummary?.scenario_highlights ?? []).filter(Boolean),
     scores: {
-      risk: detail.scores?.overall_risk_score ?? 0,
-      confidence: detail.scores?.confidence_score ?? 0,
-      dataAvailability: detail.scores?.data_availability_score ?? 0,
+      overallRiskScore:
+        (input as AnalysisRunResult).scores?.overall_risk_score ?? input.overall_risk_score ?? null,
+      confidenceScore:
+        (input as AnalysisRunResult).scores?.confidence_score ?? input.confidence_score ?? null,
+      dataAvailabilityScore:
+        (input as AnalysisRunResult).scores?.data_availability_score ??
+        input.data_availability_score ??
+        null,
     },
-    dataGapsCount: detail.data_gaps?.length ?? 0,
+    createdAt: input.created_at ?? null,
   };
 }

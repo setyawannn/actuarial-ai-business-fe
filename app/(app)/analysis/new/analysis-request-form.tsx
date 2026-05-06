@@ -8,7 +8,6 @@ import * as z from "zod";
 import { useCreateAnalysisMutation } from "@/hooks/use-analysis";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { KeyValueEditor } from "@/components/ui/key-value-editor";
 import {
   Select,
@@ -80,7 +79,6 @@ export function AnalysisRequestForm() {
     register,
     handleSubmit,
     setValue,
-    watch,
     control,
     formState: { errors },
   } = useForm<FormData>({
@@ -110,21 +108,24 @@ export function AnalysisRequestForm() {
 
     // Clean up empty URL if necessary
     const payload: ExternalAnalysisRequest = {
-      ...data,
+      company_name: data.company_name,
+      country: data.country,
+      industry: data.industry,
+      analysis_goal: data.analysis_goal,
+      language: data.language,
       website: data.website || undefined,
       legal_entity: data.legal_entity || undefined,
       location: data.location || undefined,
       ticker: data.ticker || undefined,
+      company_type: data.company_type,
       target_context: Object.keys(parsedTargetContext).length > 0 ? parsedTargetContext : undefined,
-    } as any;
-    
-    delete (payload as any).target_context_kv;
+    };
 
     mutation.mutate(payload, {
       onSuccess: (result) => {
         router.push(`/analysis/${result.analysis_public_id}`);
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         if (error instanceof ApiClientError) {
           setGlobalError({
             message: error.message,

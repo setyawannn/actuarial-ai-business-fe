@@ -25,21 +25,14 @@ export function KeyValueEditor({
   valuePlaceholder = "Value (String or JSON)",
   addButtonLabel = "Add Item",
 }: KeyValueEditorProps) {
-  // Use local state initialized from props but keep it synced
-  const [items, setItems] = React.useState<KeyValuePair[]>(value);
+  const items = value;
 
-  React.useEffect(() => {
-    // Only update internal state if external value actually differs by reference/length
-    // In a strict setting, you might use a deep compare, but for simplicity we sync length
-    if (value && value.length !== items.length) {
-      setItems(value);
-    }
-  }, [value]);
-
-  const triggerChange = (newItems: KeyValuePair[]) => {
-    setItems(newItems);
-    onChange?.(newItems);
-  };
+  const triggerChange = React.useCallback(
+    (newItems: KeyValuePair[]) => {
+      onChange?.(newItems);
+    },
+    [onChange]
+  );
 
   const handleChange = (index: number, field: "key" | "value", newValue: string) => {
     const newItems = [...items];

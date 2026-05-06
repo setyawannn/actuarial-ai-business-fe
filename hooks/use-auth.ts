@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import { MeResponseData, ApiEnvelope, ApiSuccess } from "@/types/api";
+import { MeResponseData, ApiEnvelope } from "@/types/api";
 
 async function fetchMe(): Promise<MeResponseData> {
   const res = await fetch("/api/auth/me");

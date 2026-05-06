@@ -1,20 +1,18 @@
 import { NextResponse } from "next/server";
 import { proxyRequest, forwardResponse } from "@/lib/backend-proxy";
 
-export async function POST(
+export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ credId: string }> }
 ) {
   try {
     const resolvedParams = await params;
-    const body = await req.json();
-    const res = await proxyRequest(`/admin/provider-credentials/${resolvedParams.credId}/rotate`, {
-      method: "POST",
-      body: JSON.stringify(body),
+    const res = await proxyRequest(`/admin/provider-credentials/${resolvedParams.credId}`, {
+      method: "DELETE",
     });
     return await forwardResponse(res);
   } catch (error) {
-    console.error("Admin Provider Credentials Rotate POST error:", error);
+    console.error("Admin Provider Credential DELETE error:", error);
     return NextResponse.json({ success: false, error: { message: "Internal server error" } }, { status: 500 });
   }
 }

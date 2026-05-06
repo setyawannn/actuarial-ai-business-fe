@@ -8,6 +8,7 @@ import { UnauthorizedState } from "@/components/states";
 export function AdminOnly({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data, isLoading, isError } = useMeQuery();
+  const isAdmin = data?.role === "admin" || data?.role === "super_admin";
 
   React.useEffect(() => {
     if (isError) {
@@ -21,7 +22,7 @@ export function AdminOnly({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  if (data && data.role !== "admin") {
+  if (data && !isAdmin) {
     return (
       <div className="p-6 md:p-10">
         <UnauthorizedState />
