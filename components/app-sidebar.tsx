@@ -16,6 +16,7 @@ import {
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
+import { useMeQuery } from "@/hooks/use-auth";
 import {
   Sidebar,
   SidebarContent,
@@ -89,6 +90,19 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { data: meData } = useMeQuery();
+
+  const user = meData
+    ? {
+        name: meData.name || meData.email,
+        email: meData.email,
+        avatar: "",
+      }
+    : {
+        name: "Loading...",
+        email: "",
+        avatar: "",
+      };
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
@@ -140,7 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </nav>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
