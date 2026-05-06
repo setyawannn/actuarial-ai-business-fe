@@ -81,32 +81,47 @@ export interface ExternalAnalysisRequest {
 
 // Analysis Response Types
 export interface AnalysisScores {
-  risk_score: number;
-  market_potential: number;
-  financial_health: number;
-  operational_efficiency: number;
+  overall_risk_score: number | null;
+  confidence_score: number | null;
+  data_availability_score: number | null;
 }
 
 export interface AnalysisSource {
-  id?: string | number; // DO NOT rely on this as a React key
-  title: string;
-  url?: string;
-  type: string;
-  relevance: string;
-  extracted_at?: string;
+  id?: string;
+  title: string | null;
+  url: string;
+  domain: string | null;
+  source_type: string | null;
+  credibility_score: number | null;
+  relevance_score: number | null;
+  raw_snippet: string | null;
 }
 
 export interface AnalysisDataGap {
-  id?: string | number; // DO NOT rely on this as a React key
-  category: string;
-  description: string;
-  impact_level: "low" | "medium" | "high" | "critical";
-  recommendation: string;
+  id?: string;
+  missing_item: string;
+  importance: string | null;
+  reason: string | null;
+  recommended_action: string | null;
 }
 
 export interface AnalysisReportSummary {
-  executive_summary: string;
-  key_findings: string[];
+  company_name: string;
+  analysis_goal: string;
+  language: string;
+  overall_conclusion: string;
+  overall_risk_level: string;
+  overall_risk_score: number | null;
+  confidence_score: number | null;
+  data_availability_score: number | null;
+  data_confidence: string;
+  top_findings: string[];
+  top_risks: string[];
+  key_limitations: string[];
+  recommendations: string[];
+  data_requests: string[];
+  next_steps: string[];
+
   historical_3y_summary?: string | null;
   forecast_3y_summary?: string | null;
   forecast_confidence?: string | null;
@@ -116,23 +131,28 @@ export interface AnalysisReportSummary {
 
 export interface AnalysisRunResult {
   analysis_public_id: string;
-  status: "pending" | "processing" | "completed" | "failed";
-  created_at: string;
-  updated_at: string;
-  company_name: string;
-  analysis_goal: AnalysisGoal;
-}
-
-export interface AnalysisRunDetail extends AnalysisRunResult {
-  report_summary?: AnalysisReportSummary;
-  scores?: AnalysisScores;
-  data_gaps?: AnalysisDataGap[];
-}
-
-export interface AnalysisReportDetail extends AnalysisRunResult {
+  status: string;
+  scores: AnalysisScores;
   report_markdown: string;
-  report_summary?: AnalysisReportSummary;
-  scores?: AnalysisScores;
-  sources?: AnalysisSource[];
-  data_gaps?: AnalysisDataGap[];
+  report_summary: AnalysisReportSummary;
+  sources: AnalysisSource[];
+  data_gaps: AnalysisDataGap[];
 }
+
+export interface AnalysisRunDetail {
+  id: string;
+  company_id: string;
+  analysis_mode: string;
+  analysis_goal: string;
+  language: string;
+  status: string;
+  progress: number;
+  data_availability_score: number | null;
+  confidence_score: number | null;
+  overall_risk_score: number | null;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface AnalysisReportDetail extends AnalysisRunResult {}

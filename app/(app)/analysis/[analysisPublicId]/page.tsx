@@ -1,14 +1,15 @@
-import { NotFoundState } from "@/components/states";
-import { PageHeader } from "@/components/page-header";
+import { AnalysisDetailClient } from "./analysis-detail-client";
 
-export default function AnalysisDetailPage() {
+export default async function AnalysisDetailPage({ 
+  params 
+}: { 
+  params: Promise<{ analysisPublicId: string }> 
+}) {
+  const { analysisPublicId } = await params;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Analysis Detail"
-        description="Overview detail analysis akan menggunakan shell yang sama dengan dashboard dan history."
-      />
-      <NotFoundState />
+      <AnalysisDetailClient publicId={analysisPublicId} />
     </div>
   );
 }

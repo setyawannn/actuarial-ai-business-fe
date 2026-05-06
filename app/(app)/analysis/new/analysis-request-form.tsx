@@ -59,7 +59,7 @@ const formSchema = z.object({
     "vendor_risk",
     "market_entry",
     "partnership_risk",
-  ], { required_error: "Analysis goal is required" }),
+  ]),
   language: z.enum(["id", "en"]).optional(),
   target_context_kv: z.array(
     z.object({

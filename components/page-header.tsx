@@ -5,11 +5,13 @@ export function PageHeader({
   title,
   description,
   actions,
+  children,
   className,
 }: {
   title: string;
   description?: string;
   actions?: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -19,7 +21,7 @@ export function PageHeader({
         className
       )}
     >
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 w-full">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {title}
         </h1>
@@ -28,8 +30,9 @@ export function PageHeader({
             {description}
           </p>
         ) : null}
+        {children}
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div> : null}
     </div>
   );
 }
