@@ -3,10 +3,13 @@ import { queryKeys } from "@/lib/query-keys";
 import {
   ApiClientError,
   ApiEnvelope,
+  AnalysisDataGap,
   AnalysisReportDetail,
   AnalysisRunDetail,
   AnalysisRunListItem,
   AnalysisRunResult,
+  AnalysisSource,
+  AnalysisSourcesDetail,
   ExternalAnalysisRequest,
 } from "@/types/api";
 
@@ -62,6 +65,13 @@ export function useCreateAnalysisMutation() {
         report_markdown: data.report_markdown,
         report_summary: data.report_summary,
       });
+      queryClient.setQueryData(queryKeys.analysis.sources(data.analysis_public_id), {
+        analysis_public_id: data.analysis_public_id,
+        status: data.status,
+        report_summary: data.report_summary,
+        sources: data.sources,
+        data_gaps: data.data_gaps,
+      });
     },
   });
 }
@@ -112,6 +122,66 @@ export function useAnalysisDetailQuery(publicId: string) {
     queryFn: () => fetchAnalysisDetail(publicId),
     retry: false,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+async function fetchAnalysisSources(publicId: string): Promise<AnalysisSourcesDetail> {
+  const res = await fetch(`/api/analysis/runs/${publicId}/sources`);
+  const data = (await res.json()) as ApiEnvelope<
+    AnalysisSourcesDetail | AnalysisSource[] | { sources?: AnalysisSource[]; data_gaps?: AnalysisDataGap[] }
+  >;
+
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to fetch analysis sources"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+
+  const payload = data.data;
+
+  if (Array.isArray(payload)) {
+    return {
+      analysis_public_id: publicId,
+      status: "completed",
+      sources: payload,
+      data_gaps: [],
+      report_summary: null,
+    };
+  }
+
+  if ("sources" in payload && Array.isArray(payload.sources)) {
+    return {
+      analysis_public_id: "analysis_public_id" in payload && typeof payload.analysis_public_id === "string"
+        ? payload.analysis_public_id
+        : publicId,
+      status: "status" in payload && typeof payload.status === "string" ? payload.status : "completed",
+      report_summary:
+        "report_summary" in payload && payload.report_summary && typeof payload.report_summary === "object"
+          ? payload.report_summary
+          : null,
+      sources: payload.sources,
+      data_gaps: Array.isArray(payload.data_gaps) ? payload.data_gaps : [],
+    };
+  }
+
+  return {
+    analysis_public_id: publicId,
+    status: "completed",
+    report_summary: null,
+    sources: [],
+    data_gaps: [],
+  };
+}
+
+export function useAnalysisSourcesQuery(publicId: string) {
+  return useQuery({
+    queryKey: queryKeys.analysis.sources(publicId),
+    queryFn: () => fetchAnalysisSources(publicId),
+    retry: false,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 }
 

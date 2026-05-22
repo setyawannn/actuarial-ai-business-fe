@@ -198,6 +198,14 @@ export interface AnalysisReportDetail {
   report_summary: AnalysisReportSummary | null;
 }
 
+export interface AnalysisSourcesDetail {
+  analysis_public_id: string;
+  status: string;
+  report_summary?: AnalysisReportSummary | null;
+  sources: AnalysisSource[];
+  data_gaps: AnalysisDataGap[];
+}
+
 export interface ProviderConfig {
   id: string;
   provider_name: string;
@@ -235,6 +243,9 @@ export interface PromptTemplateVersion {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  change_note?: string | null;
+  created_from_version_id?: string | null;
+  is_draft?: boolean;
 }
 
 export interface PromptTemplate {
@@ -243,7 +254,39 @@ export interface PromptTemplate {
   task_type: string;
   description: string | null;
   active_version_id: string | null;
+  active_version?: PromptTemplateVersion | null;
+  working_draft?: PromptTemplateVersion | null;
+  editor_state?: {
+    mode?: string | null;
+    source?: string | null;
+    message?: string | null;
+  } | null;
   created_at: string;
   updated_at: string;
   versions: PromptTemplateVersion[];
+}
+
+export interface PromptVariableDefinition {
+  key: string;
+  token: string;
+  label: string;
+  description: string | null;
+  required?: boolean;
+  source?: string | null;
+}
+
+export interface PromptValidationResult {
+  tokens_used: string[];
+  unknown_tokens: string[];
+  missing_required_variables: string[];
+  warnings: string[];
+}
+
+export interface PromptRenderPreview {
+  rendered_prompt?: string;
+  preview?: string;
+  content?: string;
+  tokens_used?: string[];
+  unknown_tokens?: string[];
+  warnings?: string[];
 }

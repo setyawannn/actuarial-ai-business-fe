@@ -20,13 +20,14 @@ export function InfoTooltip({
     <TooltipProvider delayDuration={120}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
-            type="button"
+          <span
+            role="img"
             aria-label={label}
+            tabIndex={0}
             className="inline-flex size-4 items-center justify-center rounded-full text-muted-foreground transition hover:text-foreground"
           >
             <InfoIcon className="size-3.5" />
-          </button>
+          </span>
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={6}>
           {content}

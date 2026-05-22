@@ -15,6 +15,10 @@ export const queryKeys = {
   },
   admin: {
     promptTemplates: ["admin", "prompt-templates"] as const,
+    promptVariables: (templateId: string) =>
+      ["admin", "prompt-templates", templateId, "variables"] as const,
+    promptDraft: (templateId: string) =>
+      ["admin", "prompt-templates", templateId, "draft"] as const,
     providerConfigs: ["admin", "provider-configs"] as const,
     providerCredentials: ["admin", "provider-credentials"] as const,
   },

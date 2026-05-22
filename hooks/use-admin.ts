@@ -4,6 +4,9 @@ import {
   ApiClientError,
   ApiEnvelope,
   PromptTemplate,
+  PromptRenderPreview,
+  PromptValidationResult,
+  PromptVariableDefinition,
   ProviderConfig,
   ProviderCredential,
 } from "@/types/api";
@@ -41,6 +44,20 @@ export function usePromptTemplatesQuery() {
       const res = await fetch("/api/admin/prompt-templates");
       return parseEnvelope<PromptTemplate[]>(res, "Failed to fetch prompt templates");
     },
+    retry: false,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+  });
+}
+
+export function usePromptTemplateDetailQuery(templateId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...queryKeys.admin.promptTemplates, "detail", templateId],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}`);
+      return parseEnvelope<PromptTemplate>(res, "Failed to fetch prompt template detail");
+    },
+    enabled: enabled && Boolean(templateId),
     retry: false,
     staleTime: 60_000,
     gcTime: 10 * 60_000,
@@ -134,6 +151,8 @@ export function useCreatePromptVersionMutation() {
         input_schema?: Record<string, unknown> | null;
         output_schema?: Record<string, unknown> | null;
         model_preferences?: Record<string, unknown> | null;
+        change_note?: string | null;
+        created_from_version_id?: string | null;
       };
     }) => {
       const res = await fetch(`/api/admin/prompt-templates/${templateId}/versions`, {
@@ -146,6 +165,105 @@ export function useCreatePromptVersionMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.promptTemplates });
+    },
+  });
+}
+
+export function useUpdatePromptVersionMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      templateId,
+      versionId,
+      payload,
+    }: {
+      templateId: string;
+      versionId: string;
+      payload: {
+        content?: string;
+        input_schema?: Record<string, unknown> | null;
+        output_schema?: Record<string, unknown> | null;
+        model_preferences?: Record<string, unknown> | null;
+        version_tag?: string;
+        change_note?: string | null;
+      };
+    }) => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}/versions/${versionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseEnvelope<PromptTemplate>(res, "Failed to update prompt version");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promptTemplates });
+    },
+  });
+}
+
+export function useSavePromptDraftMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      templateId,
+      payload,
+    }: {
+      templateId: string;
+      payload: {
+        content: string;
+        input_schema?: Record<string, unknown> | null;
+        output_schema?: Record<string, unknown> | null;
+        model_preferences?: Record<string, unknown> | null;
+        change_note?: string | null;
+      };
+    }) => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}/draft`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseEnvelope<PromptTemplate>(res, "Failed to save prompt draft");
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promptTemplates });
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.admin.promptTemplates, "detail", variables.templateId],
+      });
+    },
+  });
+}
+
+export function usePublishPromptDraftMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      templateId,
+      payload,
+    }: {
+      templateId: string;
+      payload?: {
+        version_tag?: string | null;
+        change_note?: string | null;
+      };
+    }) => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload ?? {}),
+      });
+
+      return parseEnvelope<PromptTemplate>(res, "Failed to publish prompt draft");
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promptTemplates });
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.admin.promptTemplates, "detail", variables.templateId],
+      });
     },
   });
 }
@@ -193,6 +311,70 @@ export function useActivatePromptVersionMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.promptTemplates });
+    },
+  });
+}
+
+export function usePromptVariablesQuery(templateId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.admin.promptVariables(templateId),
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}/variables`);
+      return parseEnvelope<PromptVariableDefinition[]>(res, "Failed to fetch prompt variables");
+    },
+    enabled: enabled && Boolean(templateId),
+    retry: false,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+  });
+}
+
+export function useValidatePromptVersionMutation() {
+  return useMutation({
+    mutationFn: async ({
+      templateId,
+      payload,
+    }: {
+      templateId: string;
+      payload: {
+        content: string;
+        input_schema?: Record<string, unknown> | null;
+        output_schema?: Record<string, unknown> | null;
+        model_preferences?: Record<string, unknown> | null;
+      };
+    }) => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}/versions/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseEnvelope<PromptValidationResult>(res, "Failed to validate prompt version");
+    },
+  });
+}
+
+export function useRenderPromptPreviewMutation() {
+  return useMutation({
+    mutationFn: async ({
+      templateId,
+      payload,
+    }: {
+      templateId: string;
+      payload: {
+        content: string;
+        input_schema?: Record<string, unknown> | null;
+        output_schema?: Record<string, unknown> | null;
+        model_preferences?: Record<string, unknown> | null;
+      };
+    }) => {
+      const res = await fetch(`/api/admin/prompt-templates/${templateId}/versions/render-preview`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseEnvelope<PromptRenderPreview>(res, "Failed to render prompt preview");
     },
   });
 }
