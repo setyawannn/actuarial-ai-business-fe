@@ -14,10 +14,11 @@ import { useAnalysisDetailQuery } from "@/hooks/use-analysis";
 import { ApiClientError, AnalysisDataGap, AnalysisReportDetail, AnalysisRunResult, AnalysisScores } from "@/types/api";
 import { PageHeader } from "@/components/page-header";
 import { NotFoundState } from "@/components/states";
+import { LoadingSection } from "@/components/loading-section";
+import { ErrorCard } from "@/components/error-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -129,29 +130,27 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="h-4 w-80" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
-        </div>
-        <Skeleton className="h-56 w-full" />
+        <LoadingSection.Page />
+        <LoadingSection.Cards columns={3} />
+        <LoadingSection.Content height="h-56" />
       </div>
     );
   }
 
   if (error) {
     if (error instanceof ApiClientError && error.code === "ANALYSIS_NOT_FOUND") {
-      return <NotFoundState />;
+      return (
+        <div className="space-y-6">
+          <PageHeader title="Analysis Detail" />
+          <NotFoundState />
+        </div>
+      );
     }
 
     return (
-      <div className="rounded-md border border-destructive/20 bg-destructive/15 p-4 text-destructive">
-        <p className="font-medium">Error loading analysis</p>
-        <p className="text-sm">{error.message}</p>
+      <div className="space-y-6">
+        <PageHeader title="Analysis Detail" />
+        <ErrorCard title="Error loading analysis" error={error} />
       </div>
     );
   }

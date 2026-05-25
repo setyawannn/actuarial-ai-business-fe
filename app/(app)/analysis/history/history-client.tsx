@@ -3,8 +3,9 @@
 import { useAnalysisHistoryQuery } from "@/hooks/use-analysis";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/states";
+import { LoadingSection } from "@/components/loading-section";
+import { ErrorCard } from "@/components/error-card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -17,11 +18,9 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { format } from "date-fns";
-import { ApiClientError } from "@/types/api";
 
 export function AnalysisHistoryClient() {
   const { data, isLoading, error } = useAnalysisHistoryQuery();
-  const requestId = error instanceof ApiClientError ? error.meta?.request_id : undefined;
 
   if (isLoading) {
     return (
@@ -30,12 +29,7 @@ export function AnalysisHistoryClient() {
           title="Analysis History"
           description="Memuat data riwayat analisis Anda..."
         />
-        <div className="rounded-md border p-8 space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
+        <LoadingSection.Table rows={4} />
       </div>
     );
   }
@@ -44,15 +38,7 @@ export function AnalysisHistoryClient() {
     return (
       <div className="space-y-6">
         <PageHeader title="Analysis History" />
-        <div className="rounded-md bg-destructive/15 p-4 text-destructive border border-destructive/20 flex flex-col gap-2">
-          <p className="font-medium">Gagal memuat history</p>
-          <p className="text-sm">{error.message}</p>
-          {requestId && (
-            <p className="text-xs font-mono opacity-80 mt-2">
-              Request ID: {requestId}
-            </p>
-          )}
-        </div>
+        <ErrorCard title="Gagal memuat history" error={error} />
       </div>
     );
   }

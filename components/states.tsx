@@ -1,4 +1,4 @@
-import { AlertCircleIcon, FileSearchIcon, LockIcon, SearchSlashIcon } from "lucide-react";
+import { AlertCircleIcon, FileSearchIcon, LockIcon } from "lucide-react";
 
 function BaseState({
   title,
@@ -21,16 +21,6 @@ function BaseState({
         </div>
       </div>
     </div>
-  );
-}
-
-export function LoadingState() {
-  return (
-    <BaseState
-      title="Loading content"
-      description="Area ini sudah siap dipakai. Data state dan integrasi API akan masuk di module berikutnya."
-      icon={<SearchSlashIcon className="size-5" />}
-    />
   );
 }
 

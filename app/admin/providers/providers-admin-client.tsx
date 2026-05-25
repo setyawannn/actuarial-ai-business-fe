@@ -14,11 +14,11 @@ import {
   useProviderConfigsQuery,
   useProviderCredentialsQuery,
 } from "@/hooks/use-admin";
-import { ApiClientError } from "@/types/api";
 import { buildProviderSummaries } from "@/lib/admin-providers";
 import { showAdminError, showAdminSuccess } from "@/lib/admin-feedback";
 import { PageHeader } from "@/components/page-header";
 import { InfoTooltip } from "@/components/info-tooltip";
+import { ErrorCard } from "@/components/error-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,18 +57,6 @@ function parseJsonOrNull(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return null;
   return JSON.parse(trimmed) as Record<string, unknown>;
-}
-
-function PageErrorCard({ error }: { error: Error }) {
-  const requestId = error instanceof ApiClientError ? error.meta?.request_id : undefined;
-
-  return (
-    <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-      <p className="font-medium">Provider data belum bisa dimuat</p>
-      <p className="mt-1 text-sm">{error.message}</p>
-      {requestId ? <p className="mt-2 font-mono text-xs opacity-80">Request ID: {requestId}</p> : null}
-    </div>
-  );
 }
 
 function ProviderCard({
@@ -211,7 +199,7 @@ export function ProvidersAdminClient() {
         </div>
       </PageHeader>
 
-      {queryError ? <PageErrorCard error={queryError} /> : null}
+      {queryError ? <ErrorCard title="Provider data belum bisa dimuat" error={queryError} /> : null}
 
       <Card>
         <CardHeader>

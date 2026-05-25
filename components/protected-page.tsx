@@ -6,7 +6,7 @@ import { useMeQuery } from "@/hooks/use-auth";
 
 export function ProtectedPage({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isError, error } = useMeQuery();
+  const { isError } = useMeQuery();
 
   React.useEffect(() => {
     // If the token exists (middleware passed) but backend rejects it (e.g. expired)

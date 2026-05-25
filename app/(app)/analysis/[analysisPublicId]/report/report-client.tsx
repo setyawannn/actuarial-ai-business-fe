@@ -7,13 +7,14 @@ import { useAnalysisReportQuery } from "@/hooks/use-analysis";
 import { ApiClientError } from "@/types/api";
 import { PageHeader } from "@/components/page-header";
 import { NotFoundState } from "@/components/states";
+import { LoadingSection } from "@/components/loading-section";
+import { ErrorCard } from "@/components/error-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const MarkdownRenderer = dynamic(() => import("@/components/markdown-renderer"), {
   ssr: false,
-  loading: () => <Skeleton className="h-[600px] w-full" />,
+  loading: () => <LoadingSection.Content height="h-[600px]" />,
 });
 
 function hasText(value?: string | null) {
@@ -26,30 +27,26 @@ export function AnalysisReportClient({ publicId }: { publicId: string }) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-72" />
-        </div>
-        <Skeleton className="h-[640px] w-full" />
+        <LoadingSection.Page />
+        <LoadingSection.Content height="h-[640px]" />
       </div>
     );
   }
 
   if (error) {
     if (error instanceof ApiClientError && error.code === "ANALYSIS_NOT_FOUND") {
-      return <NotFoundState />;
+      return (
+        <div className="space-y-6">
+          <PageHeader title="Analysis Report" />
+          <NotFoundState />
+        </div>
+      );
     }
 
     return (
       <div className="space-y-6">
         <PageHeader title="Analysis Report" />
-        <div className="rounded-md border border-destructive/20 bg-destructive/15 p-4 text-destructive">
-          <p className="font-medium">Error loading report</p>
-          <p className="text-sm">{error.message}</p>
-          {error instanceof ApiClientError && error.meta?.request_id ? (
-            <p className="mt-2 text-xs font-mono opacity-80">Request ID: {error.meta.request_id}</p>
-          ) : null}
-        </div>
+        <ErrorCard title="Error loading report" error={error} />
       </div>
     );
   }

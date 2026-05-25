@@ -6,6 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCreateAnalysisMutation } from "@/hooks/use-analysis";
+import { useFeedback } from "@/lib/use-feedback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { KeyValueEditor } from "@/components/ui/key-value-editor";
@@ -23,6 +24,7 @@ import {
   FieldLabel,
   FieldError,
 } from "@/components/ui/field";
+import { LoadingSection } from "@/components/loading-section";
 import { AnalysisGoal, CompanyType, ReportLanguage, ExternalAnalysisRequest, ApiClientError } from "@/types/api";
 
 const analysisGoals: { value: AnalysisGoal; label: string }[] = [
@@ -73,6 +75,7 @@ type FormData = z.infer<typeof formSchema>;
 export function AnalysisRequestForm() {
   const router = useRouter();
   const mutation = useCreateAnalysisMutation();
+  const feedback = useFeedback();
   const [globalError, setGlobalError] = React.useState<{ message: string; reqId?: string } | null>(null);
 
   const {
@@ -123,6 +126,7 @@ export function AnalysisRequestForm() {
 
     mutation.mutate(payload, {
       onSuccess: (result) => {
+        feedback.success("Analysis started", "Mengarahkan ke halaman hasil...");
         router.push(`/analysis/${result.analysis_public_id}`);
       },
       onError: (error: Error) => {
@@ -134,6 +138,7 @@ export function AnalysisRequestForm() {
         } else {
           setGlobalError({ message: error.message || "An unexpected error occurred" });
         }
+        feedback.error("Analysis gagal", error);
       },
     });
   };
@@ -275,13 +280,17 @@ export function AnalysisRequestForm() {
       </FieldGroup>
 
       <Button type="submit" disabled={mutation.isPending} className="w-full md:w-auto">
-        {mutation.isPending ? "Starting Analysis..." : "Run Analysis"}
+        {mutation.isPending ? (
+          <LoadingSection.Button label="Starting Analysis..." />
+        ) : (
+          "Run Analysis"
+        )}
       </Button>
 
       {mutation.isPending && (
-        <p className="text-sm text-muted-foreground mt-4 animate-pulse">
-          Submitting request. This might take a while depending on the complexity of the task...
-        </p>
+        <div className="mt-4">
+          <LoadingSection.Inline label="Submitting request. This might take a while depending on the complexity of the task..." />
+        </div>
       )}
     </form>
   );

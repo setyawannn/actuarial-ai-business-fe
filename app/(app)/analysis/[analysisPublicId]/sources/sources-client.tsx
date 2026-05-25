@@ -6,10 +6,11 @@ import { useAnalysisSourcesQuery } from "@/hooks/use-analysis";
 import { ApiClientError, AnalysisDataGap, AnalysisSource } from "@/types/api";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState, NotFoundState } from "@/components/states";
+import { LoadingSection } from "@/components/loading-section";
+import { ErrorCard } from "@/components/error-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -62,32 +63,27 @@ export function SourcesClient({ publicId }: { publicId: string }) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="h-4 w-80" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
-        </div>
-        <Skeleton className="h-80 w-full" />
+        <LoadingSection.Page />
+        <LoadingSection.Cards columns={3} />
+        <LoadingSection.Content height="h-80" />
       </div>
     );
   }
 
   if (error) {
     if (error instanceof ApiClientError && error.code === "ANALYSIS_NOT_FOUND") {
-      return <NotFoundState />;
+      return (
+        <div className="space-y-6">
+          <PageHeader title="Sources" />
+          <NotFoundState />
+        </div>
+      );
     }
 
     return (
-      <div className="rounded-md border border-destructive/20 bg-destructive/15 p-4 text-destructive">
-        <p className="font-medium">Error loading sources</p>
-        <p className="text-sm">{error.message}</p>
-        {error instanceof ApiClientError && error.meta?.request_id ? (
-          <p className="mt-2 font-mono text-xs">Request ID: {error.meta.request_id}</p>
-        ) : null}
+      <div className="space-y-6">
+        <PageHeader title="Sources" />
+        <ErrorCard title="Error loading sources" error={error} />
       </div>
     );
   }
