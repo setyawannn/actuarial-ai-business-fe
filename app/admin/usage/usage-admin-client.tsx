@@ -164,7 +164,7 @@ export function UsageAdminClient() {
                   <TableBody>
                     {data.runs_table.map((run) => (
                       <TableRow key={run.analysis_public_id}>
-                        <TableCell><Link href={"/analysis/" + run.analysis_public_id} className="font-medium text-primary hover:underline">{run.company_name}</Link></TableCell>
+                        <TableCell><Link href={`/admin/usage/${run.analysis_public_id}`} className="font-medium text-primary hover:underline">{run.company_name}</Link></TableCell>
                         <TableCell className="text-muted-foreground">{run.owner_email}</TableCell>
                         <TableCell><Badge variant={run.status === "completed" ? "default" : run.status === "failed" ? "destructive" : "secondary"}>{run.status}</Badge></TableCell>
                         <TableCell className="text-right">{run.total_tokens.toLocaleString()}</TableCell>

@@ -440,3 +440,59 @@ export interface AdminUsageResponse {
   data: AdminUsageData;
 }
 
+export interface AdminRunAuditRunMetadata {
+  analysis_run_id: number;
+  analysis_public_id: string;
+  company_name: string;
+  owner_email: string;
+  status: string;
+  progress: number;
+  analysis_goal: string;
+  language: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface AdminRunAuditSummary {
+  total_llm_calls: number;
+  total_tavily_queries: number;
+  total_tokens: number;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_latency_ms: number;
+  total_cost_usd: number;
+  total_llm_cost_usd: number;
+  total_tavily_cost_usd: number;
+  currency: string;
+}
+
+export interface AdminRunAuditLLMCall {
+  id: number;
+  task_type: string;
+  provider: string;
+  model_name: string;
+  prompt_template_version_id: number | null;
+  input_hash: string;
+  input_variables_keys: string[];
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  latency_ms: number;
+  error_message: string | null;
+  created_at: string;
+}
+
+export interface AdminRunAuditTavilyQuery {
+  query: string;
+  purpose: string;
+  priority: string;
+}
+
+export interface AdminRunAuditData {
+  run_metadata: AdminRunAuditRunMetadata;
+  summary: AdminRunAuditSummary;
+  llm_calls_trace: AdminRunAuditLLMCall[];
+  tavily_queries: AdminRunAuditTavilyQuery[];
+}
+

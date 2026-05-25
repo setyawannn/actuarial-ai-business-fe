@@ -9,7 +9,9 @@ import {
   PromptVariableDefinition,
   ProviderConfig,
   ProviderCredential,
-  AdminUsageData } from "@/types/api";
+  AdminUsageData,
+  AdminRunAuditData
+} from "@/types/api";
 
 function getEnvelopeErrorMessage<T>(data: ApiEnvelope<T>, fallback: string) {
   if (data.success) return fallback;
@@ -582,5 +584,29 @@ export function useAdminUsageQuery(params?: { start_date?: string; end_date?: st
     retry: false,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+  });
+}
+
+async function fetchAdminRunAudit(analysisPublicId: string): Promise<AdminRunAuditData> {
+  const res = await fetch(`/api/admin/analytics/runs/${analysisPublicId}/usage`);
+  const data = (await res.json()) as ApiEnvelope<AdminRunAuditData>;
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to fetch admin run audit"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+  return data.data;
+}
+
+export function useAdminRunAuditQuery(analysisPublicId: string) {
+  return useQuery({
+    queryKey: ["admin", "analytics", "runs", analysisPublicId, "usage"],
+    queryFn: () => fetchAdminRunAudit(analysisPublicId),
+    retry: false,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    enabled: Boolean(analysisPublicId),
   });
 }
