@@ -61,7 +61,7 @@ export function AnalysisReportClient({ publicId }: { publicId: string }) {
     : "Full generated analysis report";
 
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <PageHeader title={title} description={description} />
 
@@ -81,8 +81,8 @@ export function AnalysisReportClient({ publicId }: { publicId: string }) {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-6 md:p-8">
+      <Card className="w-full max-w-full overflow-hidden">
+        <CardContent className="w-full max-w-full overflow-x-auto p-6 md:p-8">
           {hasText(data.report_markdown) ? (
             <MarkdownRenderer content={data.report_markdown} />
           ) : (

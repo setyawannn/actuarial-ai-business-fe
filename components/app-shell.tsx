@@ -11,7 +11,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <SidebarInset>
           <TopNav />
-          <div className="flex flex-1 flex-col px-4 py-5 lg:px-6">{children}</div>
+          <div className="flex min-w-0 flex-1 flex-col px-4 py-5 lg:px-6">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

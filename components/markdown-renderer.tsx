@@ -65,7 +65,7 @@ function cleanReportMarkdown(content: string) {
 
 export default function MarkdownRenderer({ content }: { content: string }) {
   return (
-    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
+    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none break-words w-full min-w-0 overflow-hidden [&_table]:block [&_table]:overflow-x-auto [&_pre]:overflow-x-auto [&_pre]:max-w-full">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanReportMarkdown(content)}</ReactMarkdown>
     </div>
   );
