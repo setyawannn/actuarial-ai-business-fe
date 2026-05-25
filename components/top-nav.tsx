@@ -17,6 +17,7 @@ const segmentLabels: Record<string, string> = {
   admin: "Admin",
   prompts: "Prompts",
   providers: "Providers",
+  usage: "Usage Analytics",
   login: "Login",
 };
 

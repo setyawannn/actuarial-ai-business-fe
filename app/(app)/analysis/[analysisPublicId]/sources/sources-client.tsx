@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 
 function hasText(value?: string | null) {
-  if (!value) return false;
+  if (!value || typeof value !== "string") return false;
   const normalized = value.trim().toLowerCase();
   return normalized !== "" && normalized !== "n/a" && normalized !== "na" && normalized !== "unknown";
 }

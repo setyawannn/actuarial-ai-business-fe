@@ -18,7 +18,7 @@ const MarkdownRenderer = dynamic(() => import("@/components/markdown-renderer"),
 });
 
 function hasText(value?: string | null) {
-  return Boolean(value && value.trim() && !["n/a", "na"].includes(value.trim().toLowerCase()));
+  return Boolean(value && typeof value === "string" && value.trim() && !["n/a", "na"].includes(value.trim().toLowerCase()));
 }
 
 export function AnalysisReportClient({ publicId }: { publicId: string }) {

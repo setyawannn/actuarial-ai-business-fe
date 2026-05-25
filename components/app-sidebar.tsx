@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3Icon,
   BookTemplateIcon,
   Building2Icon,
   Clock3Icon,
@@ -71,10 +72,16 @@ const data = {
       items: [
         { title: "Prompts", url: "/admin/prompts" },
         { title: "Providers", url: "/admin/providers" },
+        { title: "Usage", url: "/admin/usage" },
       ],
     },
   ],
   shortcuts: [
+    {
+      title: "Usage Analytics",
+      url: "/admin/usage",
+      icon: <BarChart3Icon />,
+    },
     {
       title: "Recent Runs",
       url: "/analysis/history",

@@ -290,3 +290,153 @@ export interface PromptRenderPreview {
   unknown_tokens?: string[];
   warnings?: string[];
 }
+// ─── Week 3: Chart Types ───────────────────────────────────────────────
+
+export type ChartType = "risk_domain" | "data_availability" | "source_coverage" | "forecast_scenario";
+
+export interface ChartDataItem {
+  chart_type: ChartType;
+  title: string;
+  is_fallback: boolean;
+  fallback_reason: string | null;
+  chart_data: Record<string, unknown>;
+}
+
+export type AnalysisChartsResponse = ChartDataItem[];
+
+// ─── Week 3: Usage / Billing Types ────────────────────────────────────
+
+export interface LLMCallRecord {
+  id: number;
+  task_type: string;
+  provider: string;
+  model_name: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  latency_ms: number;
+  status: string;
+  error_message: string | null;
+  created_at: string;
+}
+
+export interface TavilyUsage {
+  query_count: number;
+  cost_per_query_usd: number;
+  total_cost_usd: number;
+}
+
+export interface UsageSummary {
+  total_cost_usd: number;
+  currency: string;
+  duration_seconds: number;
+  created_at: string;
+  completed_at: string;
+}
+
+export interface AnalysisUsageResponse {
+  analysis_public_id: string;
+  company_name: string;
+  analysis_goal: string;
+  status: string;
+  llm_usage: {
+    total_calls: number;
+    total_tokens: number;
+    total_cost_usd: number;
+    calls: LLMCallRecord[];
+  };
+  tavily_usage: TavilyUsage;
+  summary: UsageSummary;
+}
+
+// ─── Week 3: Admin Analytics Types ─────────────────────────────────────
+
+export interface DailyTrend {
+  date: string;
+  tokens: number;
+  cost_usd: number;
+  calls: number;
+  tavily_queries: number;
+}
+
+export interface ModelBreakdown {
+  model_name: string;
+  total_tokens: number;
+  total_calls: number;
+  total_cost_usd: number;
+}
+
+export interface TaskBreakdown {
+  task_type: string;
+  total_tokens: number;
+  total_calls: number;
+  total_cost_usd: number;
+}
+
+export interface TopRecord {
+  analysis_run_id: number;
+  analysis_public_id: string;
+  company_name: string;
+  total_tokens: number;
+  total_cost_usd: number;
+  created_at: string;
+}
+
+export interface RunTableRow {
+  analysis_public_id: string;
+  company_name: string;
+  owner_email: string;
+  status: string;
+  total_tokens: number;
+  tavily_queries: number;
+  total_cost_usd: number;
+  models_used: string[];
+  created_at: string;
+}
+
+export interface AdminUsageFilter {
+  start_date: string;
+  end_date: string;
+  user_id: number | null;
+}
+
+export interface AdminUsageSummary {
+  total_runs: number;
+  total_llm_calls: number;
+  total_tavily_queries: number;
+  total_tokens: number;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_cost_usd: number;
+  total_llm_cost_usd: number;
+  total_tavily_cost_usd: number;
+  currency: string;
+}
+
+export interface AdminUsageCharts {
+  daily_trend: DailyTrend[];
+  model_breakdown: ModelBreakdown[];
+  task_breakdown: TaskBreakdown[];
+}
+
+export interface AdminUsageTopRecords {
+  highest_token_run: TopRecord;
+  highest_cost_run: TopRecord;
+}
+
+export interface AdminUsageData {
+  filter: AdminUsageFilter;
+  summary: AdminUsageSummary;
+  charts: AdminUsageCharts;
+  top_records: AdminUsageTopRecords;
+  runs_table: RunTableRow[];
+}
+
+export interface AdminUsageResponse {
+  status: string;
+  code: string;
+  message: string;
+  data: AdminUsageData;
+}
+

@@ -9,7 +9,7 @@ import {
   PromptVariableDefinition,
   ProviderConfig,
   ProviderCredential,
-} from "@/types/api";
+  AdminUsageData } from "@/types/api";
 
 function getEnvelopeErrorMessage<T>(data: ApiEnvelope<T>, fallback: string) {
   if (data.success) return fallback;
@@ -552,5 +552,35 @@ export function useDisableProviderCredentialMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.providerCredentials });
     },
+  });
+}
+
+
+async function fetchAdminUsage(params?: { start_date?: string; end_date?: string; user_id?: number }): Promise<AdminUsageData> {
+  const query = new URLSearchParams();
+  if (params?.start_date) query.set("start_date", params.start_date);
+  if (params?.end_date) query.set("end_date", params.end_date);
+  if (params?.user_id) query.set("user_id", params.user_id.toString());
+  const qs = query.toString();
+  const queryString = qs ? "?" + qs : "";
+  const res = await fetch(`/api/admin/analytics/usage${queryString}`);
+  const data = (await res.json()) as ApiEnvelope<AdminUsageData>;
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to fetch admin usage"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+  return data.data;
+}
+
+export function useAdminUsageQuery(params?: { start_date?: string; end_date?: string; user_id?: number }) {
+  return useQuery({
+    queryKey: queryKeys.admin.usage(params),
+    queryFn: () => fetchAdminUsage(params),
+    retry: false,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }

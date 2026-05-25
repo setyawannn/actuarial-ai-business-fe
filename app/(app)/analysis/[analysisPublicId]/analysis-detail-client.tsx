@@ -9,12 +9,13 @@ import {
   LightbulbIcon,
   ShieldAlertIcon,
 } from "lucide-react";
-import { useAnalysisReportQuery } from "@/hooks/use-analysis";
+import { useAnalysisReportQuery, useAnalysisUsageQuery } from "@/hooks/use-analysis";
 import { useAnalysisDetailQuery } from "@/hooks/use-analysis";
 import { ApiClientError, AnalysisDataGap, AnalysisReportDetail, AnalysisRunResult, AnalysisScores } from "@/types/api";
 import { PageHeader } from "@/components/page-header";
 import { NotFoundState } from "@/components/states";
 import { LoadingSection } from "@/components/loading-section";
+import { ChartSection } from "@/components/charts/chart-section";
 import { ErrorCard } from "@/components/error-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/table";
 
 function hasText(value?: string | null) {
-  if (!value) return false;
+  if (!value || typeof value !== "string") return false;
   const normalized = value.trim().toLowerCase();
 
   return normalized !== "" && normalized !== "n/a" && normalized !== "na" && normalized !== "unknown";
@@ -40,7 +41,7 @@ function cleanList(values?: string[] | null) {
 }
 
 function isQualitativeForecast(confidence?: string | null) {
-  if (!confidence) return false;
+  if (!confidence || typeof confidence !== "string") return false;
 
   return ["low", "unknown", "partial", "insufficient"].includes(confidence.trim().toLowerCase());
 }
@@ -126,6 +127,7 @@ function renderGapRows(dataGaps: AnalysisDataGap[]) {
 export function AnalysisDetailClient({ publicId }: { publicId: string }) {
   const { data, isLoading, error } = useAnalysisReportQuery(publicId);
   const detailQuery = useAnalysisDetailQuery(publicId);
+  const usageQuery = useAnalysisUsageQuery(publicId);
 
   if (isLoading) {
     return (
@@ -178,6 +180,7 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
   const forecastMethods = cleanList(summary.forecast_methods_used);
   const scenarioHighlights = cleanList(summary.scenario_highlights);
   const dataGaps = renderGapRows(reportLikeData.data_gaps ?? []);
+  const usage = usageQuery.data;
 
   return (
     <div className="space-y-6">
@@ -225,6 +228,8 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
           ))}
         </div>
       ) : null}
+
+      <ChartSection publicId={publicId} />
 
       {hasText(summary.overall_conclusion) ? (
         <Card>
@@ -394,6 +399,53 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {usage ? (
+        <Card>
+          <CardHeader><CardTitle>Usage & Billing</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-border/70 p-3">
+                <p className="text-xs text-muted-foreground">Total LLM Calls</p>
+                <p className="text-xl font-semibold">{usage.llm_usage.total_calls}</p>
+              </div>
+              <div className="rounded-xl border border-border/70 p-3">
+                <p className="text-xs text-muted-foreground">Total Tokens</p>
+                <p className="text-xl font-semibold">{usage.llm_usage.total_tokens.toLocaleString()}</p>
+              </div>
+              <div className="rounded-xl border border-border/70 p-3">
+                <p className="text-xs text-muted-foreground">Tavily Queries</p>
+                <p className="text-xl font-semibold">{usage.tavily_usage.query_count}</p>
+              </div>
+              <div className="rounded-xl border border-border/70 p-3">
+                <p className="text-xs text-muted-foreground">Total Cost</p>
+                <p className="text-xl font-semibold">${usage.summary.total_cost_usd.toFixed(4)}</p>
+              </div>
+            </div>
+            {usage.llm_usage.calls.length > 0 && (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Model</TableHead><TableHead>Task</TableHead>
+                    <TableHead className="text-right">Tokens</TableHead><TableHead className="text-right">Cost (USD)</TableHead><TableHead className="text-right">Latency</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {usage.llm_usage.calls.map((call) => (
+                    <TableRow key={call.id}>
+                      <TableCell className="font-mono text-xs">{call.model_name}</TableCell>
+                      <TableCell>{call.task_type}</TableCell>
+                      <TableCell className="text-right">{call.total_tokens.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">${call.cost_usd.toFixed(6)}</TableCell>
+                      <TableCell className="text-right">{(call.latency_ms / 1000).toFixed(1)}s</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       ) : null}

@@ -12,6 +12,7 @@ import {
   AnalysisSourcesDetail,
   ExternalAnalysisRequest,
 } from "@/types/api";
+import { AnalysisChartsResponse, AnalysisUsageResponse } from "@/types/api";
 
 function getEnvelopeErrorMessage<T>(data: ApiEnvelope<T>, fallback: string) {
   if (data.success) {
@@ -218,5 +219,50 @@ export function useAnalysisHistoryQuery(params?: AnalysisHistoryParams) {
     retry: false,
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+async function fetchAnalysisCharts(publicId: string): Promise<AnalysisChartsResponse> {
+  const res = await fetch(`/api/analysis/runs/${publicId}/charts`);
+  const data = (await res.json()) as ApiEnvelope<AnalysisChartsResponse>;
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to fetch analysis charts"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+  return data.data;
+}
+
+export function useAnalysisChartsQuery(publicId: string) {
+  return useQuery({
+    queryKey: queryKeys.analysis.charts(publicId),
+    queryFn: () => fetchAnalysisCharts(publicId),
+    retry: false,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+}
+
+async function fetchAnalysisUsage(publicId: string): Promise<AnalysisUsageResponse> {
+  const res = await fetch(`/api/analysis/runs/${publicId}/usage`);
+  const data = (await res.json()) as ApiEnvelope<AnalysisUsageResponse>;
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to fetch analysis usage"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+  return data.data;
+}
+
+export function useAnalysisUsageQuery(publicId: string) {
+  return useQuery({
+    queryKey: queryKeys.analysis.usage(publicId),
+    queryFn: () => fetchAnalysisUsage(publicId),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 }

@@ -2,7 +2,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import React from "react";
 
-function shouldHideValue(value: string) {
+function shouldHideValue(value: any) {
+  if (!value || typeof value !== "string") return true;
   const normalized = value.trim().toLowerCase();
 
   return (

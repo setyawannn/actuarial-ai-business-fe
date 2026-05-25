@@ -12,6 +12,10 @@ export const queryKeys = {
       ["analysis", "report", analysisPublicId] as const,
     sources: (analysisPublicId: string) =>
       ["analysis", "sources", analysisPublicId] as const,
+    charts: (analysisPublicId: string) =>
+      ["analysis", "charts", analysisPublicId] as const,
+    usage: (analysisPublicId: string) =>
+      ["analysis", "usage", analysisPublicId] as const,
   },
   admin: {
     promptTemplates: ["admin", "prompt-templates"] as const,
@@ -21,5 +25,7 @@ export const queryKeys = {
       ["admin", "prompt-templates", templateId, "draft"] as const,
     providerConfigs: ["admin", "provider-configs"] as const,
     providerCredentials: ["admin", "provider-credentials"] as const,
+    usage: (params?: Record<string, unknown>) =>
+      ["admin", "usage", params ?? {}] as const,
   },
 };

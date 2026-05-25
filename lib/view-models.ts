@@ -21,7 +21,7 @@ export interface AnalysisOverviewViewModel {
 }
 
 function hasText(value?: string | null) {
-  return Boolean(value && value.trim() && !["n/a", "na", "unknown"].includes(value.trim().toLowerCase()));
+  return Boolean(value && typeof value === "string" && value.trim() && !["n/a", "na", "unknown"].includes(value.trim().toLowerCase()));
 }
 
 export function toAnalysisOverviewViewModel(
