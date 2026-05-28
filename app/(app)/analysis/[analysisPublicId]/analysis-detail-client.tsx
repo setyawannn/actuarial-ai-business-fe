@@ -13,6 +13,8 @@ import { useAnalysisReportQuery, useAnalysisDetailQuery } from "@/hooks/use-anal
 import { ApiClientError, AnalysisDataGap, AnalysisReportDetail, AnalysisRunResult, AnalysisScores } from "@/types/api";
 import { PageHeader } from "@/components/page-header";
 import { NotFoundState } from "@/components/states";
+import { AiAnalysisWorkspace } from "@/components/loading-ux/ai-analysis-workspace";
+import { ContextEvaluatorForm } from "@/components/loading-ux/context-evaluator-form";
 import { LoadingSection } from "@/components/loading-section";
 import { ChartSection } from "@/components/charts/chart-section";
 import { ErrorCard } from "@/components/error-card";
@@ -124,16 +126,45 @@ function renderGapRows(dataGaps: AnalysisDataGap[]) {
 }
 
 export function AnalysisDetailClient({ publicId }: { publicId: string }) {
-  const { data, isLoading, error } = useAnalysisReportQuery(publicId);
-  const detailQuery = useAnalysisDetailQuery(publicId);
+  const detailQuery = useAnalysisDetailQuery(publicId, {
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (status === "completed" || status === "failed" || status === "needs_more_context") {
+        return false;
+      }
+      return 3000;
+    },
+  });
 
-  if (isLoading) {
+  const isRunning = detailQuery.data 
+    ? !["completed", "failed", "needs_more_context"].includes(detailQuery.data.status)
+    : (!detailQuery.error); // defaults to true while loading, false if error
+
+  const { data, isLoading, error } = useAnalysisReportQuery(publicId, {
+    refetchInterval: isRunning ? 3000 : false,
+  });
+
+  if (detailQuery.isLoading || (isLoading && isRunning)) {
+    return <AiAnalysisWorkspace />;
+  }
+
+  if (detailQuery.data?.status === "needs_more_context") {
     return (
-      <div className="space-y-6">
-        <LoadingSection.Page />
-        <LoadingSection.Cards columns={3} />
-        <LoadingSection.Content height="h-56" />
+      <div className="space-y-6 max-w-3xl mx-auto mt-6">
+        <ContextEvaluatorForm 
+          publicId={publicId} 
+          questions={detailQuery.data.context_questions || []} 
+        />
       </div>
+    );
+  }
+
+  if (isRunning) {
+    return (
+      <AiAnalysisWorkspace 
+        status={detailQuery.data?.status}
+        progress={detailQuery.data?.progress}
+      />
     );
   }
 

@@ -175,6 +175,22 @@ export interface AnalysisRunListItem {
   data_availability_score?: number | null;
 }
 
+export interface ContextQuestion {
+  question_id: string;
+  question_text: string;
+  reason_why_needed: string;
+}
+
+export interface ContextAnswerItem {
+  question_id: string;
+  answer: string;
+}
+
+export interface SubmitContextAnswersRequest {
+  answers: ContextAnswerItem[];
+  is_skipped: boolean;
+}
+
 export interface AnalysisRunDetail {
   id: string;
   company_id: string;
@@ -189,6 +205,7 @@ export interface AnalysisRunDetail {
   error_message: string | null;
   created_at: string;
   completed_at: string | null;
+  context_questions?: ContextQuestion[];
 }
 
 export interface AnalysisReportDetail {

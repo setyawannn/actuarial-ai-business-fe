@@ -11,6 +11,7 @@ import {
   AnalysisSource,
   AnalysisSourcesDetail,
   ExternalAnalysisRequest,
+  SubmitContextAnswersRequest,
 } from "@/types/api";
 import { AnalysisChartsResponse, AnalysisUsageResponse } from "@/types/api";
 
@@ -92,13 +93,14 @@ async function fetchAnalysisReport(publicId: string): Promise<AnalysisReportDeta
   return data.data;
 }
 
-export function useAnalysisReportQuery(publicId: string) {
+export function useAnalysisReportQuery(publicId: string, options?: { refetchInterval?: number | false | ((query: any) => number | false | undefined) }) {
   return useQuery({
     queryKey: queryKeys.analysis.report(publicId),
     queryFn: () => fetchAnalysisReport(publicId),
     retry: false,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    ...options,
   });
 }
 
@@ -117,12 +119,13 @@ async function fetchAnalysisDetail(publicId: string): Promise<AnalysisRunDetail>
   return data.data;
 }
 
-export function useAnalysisDetailQuery(publicId: string) {
+export function useAnalysisDetailQuery(publicId: string, options?: { refetchInterval?: number | false | ((query: any) => number | false | undefined) }) {
   return useQuery({
     queryKey: queryKeys.analysis.detail(publicId),
     queryFn: () => fetchAnalysisDetail(publicId),
     retry: false,
     staleTime: 5 * 60 * 1000,
+    ...options,
   });
 }
 
@@ -264,5 +267,37 @@ export function useAnalysisUsageQuery(publicId: string) {
     queryFn: () => fetchAnalysisUsage(publicId),
     retry: false,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+async function submitContextAnswers(params: { publicId: string; payload: SubmitContextAnswersRequest }): Promise<void> {
+  const res = await fetch(`/api/analysis/runs/${params.publicId}/context-answers`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params.payload),
+  });
+
+  const data = (await res.json()) as ApiEnvelope<void>;
+
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to submit context answers"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+}
+
+export function useSubmitContextAnswersMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: submitContextAnswers,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.analysis.detail(variables.publicId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analysis.report(variables.publicId) });
+    },
   });
 }

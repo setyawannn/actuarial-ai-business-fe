@@ -10,19 +10,18 @@ import { ErrorCard } from "@/components/error-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 
 const COLORS = ["#6366f1", "#84cc16", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 
 export function UsageAdminClient() {
-  const today = format(new Date(), "yyyy-MM-dd");
-  const thirtyDaysAgo = format(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd");
-
-  const [startDate, setStartDate] = React.useState(thirtyDaysAgo);
-  const [endDate, setEndDate] = React.useState(today);
+  const [startDate, setStartDate] = React.useState<Date | undefined>(
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  );
+  const [endDate, setEndDate] = React.useState<Date | undefined>(new Date());
   const [queryParams, setQueryParams] = React.useState<{ start_date?: string; end_date?: string }>({});
 
   const { data, isLoading, error } = useAdminUsageQuery(
@@ -31,8 +30,8 @@ export function UsageAdminClient() {
 
   function handleSearch() {
     setQueryParams({
-      start_date: startDate ? startDate + "T00:00:00" : undefined,
-      end_date: endDate ? endDate + "T23:59:59" : undefined,
+      start_date: startDate ? format(startDate, "yyyy-MM-dd") + "T00:00:00" : undefined,
+      end_date: endDate ? format(endDate, "yyyy-MM-dd") + "T23:59:59" : undefined,
     });
   }
 
@@ -44,13 +43,13 @@ export function UsageAdminClient() {
         <CardHeader><CardTitle>Date Range</CardTitle></CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="start-date">Start Date</Label>
-              <Input id="start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-44" />
+            <div className="flex flex-col space-y-1.5">
+              <Label>Start Date</Label>
+              <DatePicker date={startDate} setDate={setStartDate} className="w-[180px]" placeholder="Pilih tanggal mulai" />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="end-date">End Date</Label>
-              <Input id="end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-44" />
+            <div className="flex flex-col space-y-1.5">
+              <Label>End Date</Label>
+              <DatePicker date={endDate} setDate={setEndDate} className="w-[180px]" placeholder="Pilih tanggal akhir" />
             </div>
             <Button onClick={handleSearch}>Apply</Button>
           </div>
