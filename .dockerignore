@@ -1,0 +1,15 @@
+Dockerfile
+.dockerignore
+.env
+.env.*.local
+.git
+.gitignore
+.next
+.vscode
+node_modules
+README.md
+bun.lock
+bun.lockb
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
