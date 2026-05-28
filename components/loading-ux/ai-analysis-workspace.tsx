@@ -25,6 +25,7 @@ const loadingTexts = [
 
 export function AiAnalysisWorkspace({ companyName, status = "processing", progress = 0 }: AiAnalysisWorkspaceProps) {
   const [textIndex, setTextIndex] = React.useState(0);
+  const [simulatedProgress, setSimulatedProgress] = React.useState(0);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -32,6 +33,48 @@ export function AiAnalysisWorkspace({ companyName, status = "processing", progre
     }, 3500);
     return () => clearInterval(interval);
   }, []);
+
+  // Set up smooth dynamic progress simulation
+  React.useEffect(() => {
+    // If completed or failed, jump to 100 or stop
+    if (status === "completed" || progress >= 100) {
+      setSimulatedProgress(100);
+      return;
+    }
+    
+    // If needs more context, pause simulation
+    if (status === "needs_more_context") {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setSimulatedProgress((prev) => {
+        if (prev >= 98) {
+          // Crawl extremely slowly near completion
+          return Math.min(99, prev + 0.1);
+        }
+        
+        // Dynamic increments based on current progress phase
+        let increment = 1;
+        if (prev < 20) {
+          increment = Math.random() * 3 + 2; // Fast start (2% - 5%)
+        } else if (prev < 50) {
+          increment = Math.random() * 2 + 1; // Medium pace (1% - 3%)
+        } else if (prev < 80) {
+          increment = Math.random() * 1.5 + 0.5; // Slower (0.5% - 2%)
+        } else {
+          increment = Math.random() * 0.8 + 0.2; // Slow synthesis (0.2% - 1%)
+        }
+        
+        return Math.min(98, prev + increment);
+      });
+    }, 450);
+
+    return () => clearInterval(interval);
+  }, [status, progress]);
+
+  // The effective progress is the max of our simulation and the actual backend progress
+  const effectiveProgress = Math.max(simulatedProgress, progress);
 
   const currentText = loadingTexts[textIndex];
 
@@ -41,58 +84,58 @@ export function AiAnalysisWorkspace({ companyName, status = "processing", progre
       {
         id: "research",
         label: "Riset Data Publik",
-        status: progress < 40 ? "active" : "completed",
+        status: effectiveProgress < 40 ? "active" : "completed",
       },
       {
         id: "analysis",
         label: "Analisis Risiko",
-        status: progress >= 40 && progress < 70 ? "active" : progress >= 70 ? "completed" : "pending",
+        status: effectiveProgress >= 40 && effectiveProgress < 70 ? "active" : effectiveProgress >= 70 ? "completed" : "pending",
       },
       {
         id: "report",
         label: "Penyusunan Laporan",
-        status: progress >= 70 && progress < 95 ? "active" : progress >= 95 ? "completed" : "pending",
+        status: effectiveProgress >= 70 && effectiveProgress < 95 ? "active" : effectiveProgress >= 95 ? "completed" : "pending",
       },
       {
         id: "complete",
         label: "Finalisasi Hasil",
-        status: progress >= 95 ? "active" : "pending",
+        status: effectiveProgress >= 95 ? "active" : "pending",
       },
     ] as const;
-  }, [progress]);
+  }, [effectiveProgress]);
 
   const activities = React.useMemo(() => {
     return [
       {
         id: "1",
         message: "Mencari data dari internet...",
-        timestamp: progress < 20 ? "saat ini" : "selesai",
+        timestamp: effectiveProgress < 20 ? "saat ini" : "selesai",
         icon: "search" as const,
-        status: progress < 40 ? "active" : "done",
+        status: effectiveProgress < 40 ? "active" : "done",
       },
       {
         id: "2",
         message: "Mengevaluasi konteks data...",
-        timestamp: status === "evaluating_context" ? "saat ini" : progress >= 40 ? "selesai" : "-",
+        timestamp: status === "evaluating_context" ? "saat ini" : effectiveProgress >= 40 ? "selesai" : "-",
         icon: "clock" as const,
-        status: status === "evaluating_context" ? "active" : progress >= 40 ? "done" : "pending",
+        status: status === "evaluating_context" ? "active" : effectiveProgress >= 40 ? "done" : "pending",
       },
       {
         id: "3",
         message: "Menganalisis posisi pasar & kompetisi...",
-        timestamp: progress >= 40 && progress < 70 ? "saat ini" : progress >= 70 ? "selesai" : "-",
+        timestamp: effectiveProgress >= 40 && effectiveProgress < 70 ? "saat ini" : effectiveProgress >= 70 ? "selesai" : "-",
         icon: "brain" as const,
-        status: progress >= 40 && progress < 70 ? "active" : progress >= 70 ? "done" : "pending",
+        status: effectiveProgress >= 40 && effectiveProgress < 70 ? "active" : effectiveProgress >= 70 ? "done" : "pending",
       },
       {
         id: "4",
         message: "Menyusun laporan komprehensif...",
-        timestamp: progress >= 70 ? "saat ini" : "-",
+        timestamp: effectiveProgress >= 70 ? "saat ini" : "-",
         icon: "file" as const,
-        status: progress >= 70 && progress < 95 ? "active" : progress >= 95 ? "done" : "pending",
+        status: effectiveProgress >= 70 && effectiveProgress < 95 ? "active" : effectiveProgress >= 95 ? "done" : "pending",
       },
     ] as const;
-  }, [progress, status]);
+  }, [effectiveProgress, status]);
 
   return (
     <div className="space-y-6">
@@ -121,8 +164,19 @@ export function AiAnalysisWorkspace({ companyName, status = "processing", progre
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <div className="space-y-6">
-          <div className="rounded-xl border border-border/70 p-4 bg-card shadow-sm">
-            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Progress Keseluruhan</p>
+          <div className="rounded-xl border border-border/70 p-4 bg-card shadow-sm space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <span>Progress Keseluruhan</span>
+                <span className="font-mono text-primary text-sm font-bold">{Math.round(effectiveProgress)}%</span>
+              </div>
+              <div className="relative w-full h-2 rounded-full bg-muted overflow-hidden">
+                <div 
+                  className="h-full bg-primary rounded-full transition-all duration-300 ease-out" 
+                  style={{ width: `${Math.min(100, Math.max(0, effectiveProgress))}%` }} 
+                />
+              </div>
+            </div>
             <PipelineStepper steps={steps as any} />
           </div>
           <div className="rounded-xl border border-border/70 p-4 bg-card shadow-sm">

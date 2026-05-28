@@ -44,6 +44,21 @@ export function NavMain({
           const isActive =
             item.match?.some((prefix) => pathname.startsWith(prefix)) ?? pathname === item.url;
 
+          const hasSubItems = item.items && item.items.length > 0;
+
+          if (!hasSubItems) {
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                  <Link href={item.url}>
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          }
+
           return (
             <Collapsible
               key={item.title}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -126,6 +127,9 @@ function renderGapRows(dataGaps: AnalysisDataGap[]) {
 }
 
 export function AnalysisDetailClient({ publicId }: { publicId: string }) {
+  const searchParams = useSearchParams();
+  const isNew = searchParams.get("new") === "true";
+
   const detailQuery = useAnalysisDetailQuery(publicId, {
     refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -138,14 +142,23 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
 
   const isRunning = detailQuery.data 
     ? !["completed", "failed", "needs_more_context"].includes(detailQuery.data.status)
-    : (!detailQuery.error); // defaults to true while loading, false if error
+    : isNew; // default to true ONLY if it's a new run
 
   const { data, isLoading, error } = useAnalysisReportQuery(publicId, {
     refetchInterval: isRunning ? 3000 : false,
   });
 
   if (detailQuery.isLoading || (isLoading && isRunning)) {
-    return <AiAnalysisWorkspace />;
+    if (isRunning) {
+      return <AiAnalysisWorkspace />;
+    }
+    return (
+      <div className="space-y-6">
+        <LoadingSection.Page />
+        <LoadingSection.Cards columns={3} />
+        <LoadingSection.Content height="h-56" />
+      </div>
+    );
   }
 
   if (detailQuery.data?.status === "needs_more_context") {

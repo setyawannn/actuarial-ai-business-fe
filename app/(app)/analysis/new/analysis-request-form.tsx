@@ -24,6 +24,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { LoadingSection } from "@/components/loading-section";
+import { AiAnalysisWorkspace } from "@/components/loading-ux/ai-analysis-workspace";
 import { AnalysisGoal, CompanyType, ReportLanguage, ExternalAnalysisRequest, ApiClientError } from "@/types/api";
 import { BuildingIcon, TargetIcon, SparklesIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
@@ -78,12 +79,14 @@ export function AnalysisRequestForm() {
   const feedback = useFeedback();
   const [globalError, setGlobalError] = React.useState<{ message: string; reqId?: string } | null>(null);
   const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const [isRedirecting, setIsRedirecting] = React.useState(false);
 
   const {
     register,
     handleSubmit,
     setValue,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -92,6 +95,8 @@ export function AnalysisRequestForm() {
       company_type: "unknown",
     },
   });
+
+  const selectedGoal = watch("analysis_goal");
 
   const onSubmit = (data: FormData) => {
     setGlobalError(null);
@@ -127,22 +132,41 @@ export function AnalysisRequestForm() {
 
     mutation.mutate(payload, {
       onSuccess: (result) => {
+        setIsRedirecting(true);
         feedback.success("Memulai Analisis...", "Sistem AI sedang bekerja, mohon tunggu sebentar.");
-        router.push(`/analysis/${result.analysis_public_id}`);
+        router.push(`/analysis/${result.analysis_public_id}?new=true`);
       },
       onError: (error: Error) => {
+        setIsRedirecting(false);
+        const isDev = process.env.NODE_ENV === "development";
+        
         if (error instanceof ApiClientError) {
           setGlobalError({
             message: error.message,
             reqId: error.meta?.request_id,
           });
         } else {
-          setGlobalError({ message: error.message || "Terjadi kesalahan yang tidak terduga" });
+          // Hide technical errors in production
+          setGlobalError({ 
+            message: isDev ? error.message : "Terjadi kendala saat menghubungi server. Silakan coba beberapa saat lagi." 
+          });
         }
         feedback.error("Gagal memulai analisis", error);
       },
     });
   };
+
+  if (mutation.isPending || isRedirecting) {
+    return (
+      <div className="animate-in fade-in zoom-in-95 duration-500">
+        <AiAnalysisWorkspace 
+          companyName={control._formValues.company_name || ""} 
+          status="initializing" 
+          progress={0} 
+        />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
@@ -214,9 +238,17 @@ export function AnalysisRequestForm() {
           <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
             <Field>
               <FieldLabel>Tujuan Analisis <span className="text-destructive">*</span></FieldLabel>
-              <Select onValueChange={(v) => setValue("analysis_goal", v as AnalysisGoal)} disabled={mutation.isPending}>
+              <Select 
+                value={selectedGoal} 
+                onValueChange={(v) => setValue("analysis_goal", v as AnalysisGoal)} 
+                disabled={mutation.isPending}
+              >
                 <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Pilih tujuan analisis..." />
+                  <SelectValue placeholder="Pilih tujuan analisis...">
+                    {selectedGoal ? (
+                      analysisGoals.find((goal) => goal.value === selectedGoal)?.label
+                    ) : null}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {analysisGoals.map((goal) => (
@@ -320,7 +352,6 @@ export function AnalysisRequestForm() {
         <Button 
           type="button" 
           variant="ghost" 
-          disabled={mutation.isPending}
           onClick={() => router.back()}
           className="w-full sm:w-auto"
         >
@@ -328,28 +359,15 @@ export function AnalysisRequestForm() {
         </Button>
         <Button 
           type="submit" 
-          disabled={mutation.isPending} 
           size="lg"
           className="w-full sm:w-auto px-8 font-semibold shadow-md hover:shadow-lg transition-shadow"
         >
-          {mutation.isPending ? (
-            <LoadingSection.Button label="Mempersiapkan AI..." />
-          ) : (
-            <span className="flex items-center gap-2">
-              <SparklesIcon className="size-4" />
-              Mulai Analisis
-            </span>
-          )}
+          <span className="flex items-center gap-2">
+            <SparklesIcon className="size-4" />
+            Mulai Analisis
+          </span>
         </Button>
       </div>
-
-      {mutation.isPending && (
-        <div className="mt-2 text-center animate-in fade-in">
-          <p className="text-sm text-muted-foreground">
-            Sistem sedang membuat sesi workspace dan memulai riset...
-          </p>
-        </div>
-      )}
     </form>
   );
 }

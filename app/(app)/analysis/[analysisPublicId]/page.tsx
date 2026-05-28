@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { AnalysisDetailClient } from "./analysis-detail-client";
+import { LoadingSection } from "@/components/loading-section";
 
 export default async function AnalysisDetailPage({ 
   params 
@@ -9,7 +11,9 @@ export default async function AnalysisDetailPage({
 
   return (
     <div className="space-y-6">
-      <AnalysisDetailClient publicId={analysisPublicId} />
+      <Suspense fallback={<LoadingSection.Page />}>
+        <AnalysisDetailClient publicId={analysisPublicId} />
+      </Suspense>
     </div>
   );
 }

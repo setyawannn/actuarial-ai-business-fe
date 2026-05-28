@@ -61,7 +61,6 @@ const data = {
       items: [
         { title: "New Run", url: "/analysis/new" },
         { title: "History", url: "/analysis/history" },
-        { title: "Sample Detail", url: "/analysis/anl_demo" },
       ],
     },
     {
