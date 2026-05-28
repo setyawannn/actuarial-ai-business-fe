@@ -12,8 +12,10 @@ import {
   AnalysisSourcesDetail,
   ExternalAnalysisRequest,
   SubmitContextAnswersRequest,
+  AnalysisChartsResponse,
+  AnalysisUsageResponse,
+  AnalysisHistoryMeta,
 } from "@/types/api";
-import { AnalysisChartsResponse, AnalysisUsageResponse } from "@/types/api";
 
 function getEnvelopeErrorMessage<T>(data: ApiEnvelope<T>, fallback: string) {
   if (data.success) {
@@ -191,14 +193,18 @@ export function useAnalysisSourcesQuery(publicId: string) {
 
 export interface AnalysisHistoryParams {
   page?: number;
-  limit?: number;
+  page_size?: number;
+  search?: string;
+  status?: string;
   [key: string]: unknown;
 }
 
-async function fetchAnalysisHistory(params?: AnalysisHistoryParams): Promise<AnalysisRunListItem[]> {
+async function fetchAnalysisHistory(params?: AnalysisHistoryParams): Promise<{ data: AnalysisRunListItem[]; meta: AnalysisHistoryMeta }> {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", params.page.toString());
-  if (params?.limit) query.set("limit", params.limit.toString());
+  if (params?.page_size) query.set("page_size", params.page_size.toString());
+  if (params?.search) query.set("search", params.search);
+  if (params?.status && params.status !== "all") query.set("status", params.status);
   
   const queryString = query.toString() ? `?${query.toString()}` : "";
   const res = await fetch(`/api/analysis/runs${queryString}`);
@@ -212,12 +218,15 @@ async function fetchAnalysisHistory(params?: AnalysisHistoryParams): Promise<Ana
     );
   }
 
-  return data.data;
+  return {
+    data: data.data,
+    meta: data.meta as unknown as AnalysisHistoryMeta
+  };
 }
 
 export function useAnalysisHistoryQuery(params?: AnalysisHistoryParams) {
   return useQuery({
-    queryKey: queryKeys.analysis.history(params),
+    queryKey: queryKeys.analysis.history(params as Record<string, unknown>),
     queryFn: () => fetchAnalysisHistory(params),
     retry: false,
     staleTime: 30 * 1000, // 30 seconds

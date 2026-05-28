@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import {
   ApiClientError,
@@ -10,7 +10,8 @@ import {
   ProviderConfig,
   ProviderCredential,
   AdminUsageData,
-  AdminRunAuditData
+  AdminRunAuditData,
+  AdminRunsTableData
 } from "@/types/api";
 
 function getEnvelopeErrorMessage<T>(data: ApiEnvelope<T>, fallback: string) {
@@ -558,11 +559,22 @@ export function useDisableProviderCredentialMutation() {
 }
 
 
-async function fetchAdminUsage(params?: { start_date?: string; end_date?: string; user_id?: number }): Promise<AdminUsageData> {
+export interface AdminUsageParams {
+  start_date?: string;
+  end_date?: string;
+  user_id?: number;
+  search?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+async function fetchAdminUsage(params?: AdminUsageParams): Promise<AdminUsageData> {
   const query = new URLSearchParams();
   if (params?.start_date) query.set("start_date", params.start_date);
   if (params?.end_date) query.set("end_date", params.end_date);
   if (params?.user_id) query.set("user_id", params.user_id.toString());
+  if (params?.search) query.set("search", params.search);
+  if (params?.status && params.status !== "all") query.set("status", params.status);
   const qs = query.toString();
   const queryString = qs ? "?" + qs : "";
   const res = await fetch(`/api/admin/analytics/usage${queryString}`);
@@ -577,13 +589,59 @@ async function fetchAdminUsage(params?: { start_date?: string; end_date?: string
   return data.data;
 }
 
-export function useAdminUsageQuery(params?: { start_date?: string; end_date?: string; user_id?: number }) {
+export function useAdminUsageQuery(params?: AdminUsageParams) {
   return useQuery({
-    queryKey: queryKeys.admin.usage(params),
+    queryKey: queryKeys.admin.usage(params as Record<string, unknown>),
     queryFn: () => fetchAdminUsage(params),
     retry: false,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
+  });
+}
+
+export interface AdminRunsTableParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  user_id?: number;
+  [key: string]: unknown;
+}
+
+async function fetchAdminRunsTable(params?: AdminRunsTableParams): Promise<AdminRunsTableData> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", params.page.toString());
+  if (params?.page_size) query.set("page_size", params.page_size.toString());
+  if (params?.search) query.set("search", params.search);
+  if (params?.status && params.status !== "all") query.set("status", params.status);
+  if (params?.start_date) query.set("start_date", params.start_date);
+  if (params?.end_date) query.set("end_date", params.end_date);
+  if (params?.user_id) query.set("user_id", params.user_id.toString());
+  
+  const qs = query.toString();
+  const queryString = qs ? "?" + qs : "";
+  const res = await fetch(`/api/admin/analytics/runs-table${queryString}`);
+  const data = (await res.json()) as ApiEnvelope<AdminRunsTableData>;
+  if (!data.success) {
+    throw new ApiClientError(
+      getEnvelopeErrorMessage(data, "Failed to fetch admin runs table"),
+      getEnvelopeErrorCode(data, "UNKNOWN"),
+      data.meta
+    );
+  }
+  return data.data;
+}
+
+export function useAdminRunsTableQuery(params?: AdminRunsTableParams) {
+  return useQuery({
+    queryKey: [...queryKeys.admin.usage(params as Record<string, unknown>), "runs-table"],
+    queryFn: () => fetchAdminRunsTable(params),
+    retry: false,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }
 

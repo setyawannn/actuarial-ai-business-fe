@@ -170,17 +170,24 @@ export function AdminRunAuditClient({ analysisPublicId }: { analysisPublicId: st
           </CardHeader>
           <CardContent>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              {tavily_queries.map((q, index) => (
-                <li key={index} className="rounded-xl border border-border/70 bg-muted/20 p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-medium text-foreground">{q.query}</span>
-                    <Badge variant={q.priority === 'high' ? 'destructive' : 'secondary'} className="text-[10px]">
-                      {q.priority}
-                    </Badge>
-                  </div>
-                  {q.purpose && <p className="mt-1 text-xs">{q.purpose}</p>}
-                </li>
-              ))}
+              {tavily_queries.map((q, index) => {
+                const queryText = typeof q === "string" ? q : q.query;
+                const purpose = typeof q === "string" ? undefined : q.purpose;
+                const priority = typeof q === "string" ? undefined : q.priority;
+                return (
+                  <li key={index} className="rounded-xl border border-border/70 bg-muted/20 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-medium text-foreground">{queryText}</span>
+                      {priority && (
+                        <Badge variant={priority === "high" ? "destructive" : "secondary"} className="text-[10px]">
+                          {priority}
+                        </Badge>
+                      )}
+                    </div>
+                    {purpose && <p className="mt-1 text-xs">{purpose}</p>}
+                  </li>
+                );
+              })}
             </ul>
           </CardContent>
         </Card>

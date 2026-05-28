@@ -438,8 +438,8 @@ export interface AdminUsageCharts {
 }
 
 export interface AdminUsageTopRecords {
-  highest_token_run: TopRecord;
-  highest_cost_run: TopRecord;
+  highest_token_run: TopRecord | null;
+  highest_cost_run: TopRecord | null;
 }
 
 export interface AdminUsageData {
@@ -447,7 +447,50 @@ export interface AdminUsageData {
   summary: AdminUsageSummary;
   charts: AdminUsageCharts;
   top_records: AdminUsageTopRecords;
-  runs_table: RunTableRow[];
+  // runs_table removed in week4 — use AdminRunsTableData from /admin/analytics/runs-table
+}
+
+// New in week4: dedicated paginated runs-table endpoint
+export interface AdminRunsTableRow {
+  analysis_public_id: string;
+  company_name: string;
+  owner_email: string;
+  status: string;
+  overall_risk_score: number | null;
+  confidence_score: number | null;
+  data_availability_score: number | null;
+  total_tokens: number;
+  tavily_queries: number;
+  total_cost_usd: number;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface AdminRunsTableMeta {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface AdminRunsTableData {
+  data: AdminRunsTableRow[];
+  meta: AdminRunsTableMeta;
+  filter: {
+    search: string | null;
+    status: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    user_id: number | null;
+  };
+}
+
+// Pagination meta for analysis history (week4)
+export interface AnalysisHistoryMeta {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
 }
 
 export interface AdminUsageResponse {
@@ -500,11 +543,10 @@ export interface AdminRunAuditLLMCall {
   created_at: string;
 }
 
-export interface AdminRunAuditTavilyQuery {
-  query: string;
-  purpose: string;
-  priority: string;
-}
+// Backend may return either a plain string or a rich object per query
+export type AdminRunAuditTavilyQuery =
+  | string
+  | { query: string; purpose?: string; priority?: string };
 
 export interface AdminRunAuditData {
   run_metadata: AdminRunAuditRunMetadata;
@@ -513,3 +555,8 @@ export interface AdminRunAuditData {
   tavily_queries: AdminRunAuditTavilyQuery[];
 }
 
+export interface AdminRunAuditResponse {
+  code: string;
+  message: string;
+  data: AdminRunAuditData;
+}
