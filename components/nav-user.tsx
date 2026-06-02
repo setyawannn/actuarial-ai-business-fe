@@ -100,9 +100,9 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
                 <BadgeCheckIcon />
-                Team profile
+                Profile settings
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCardIcon />

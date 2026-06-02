@@ -13,21 +13,20 @@ export function AdminOnly({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (isError) {
       router.push("/login");
+    } else if (data && !isAdmin) {
+      // Silently bounce non-admins (stealth mode)
+      if (window.history.length > 2) {
+        router.back();
+      } else {
+        router.replace("/dashboard");
+      }
     }
-  }, [isError, router]);
+  }, [isError, data, isAdmin, router]);
 
   // Don't show a global blocking loading spinner to avoid "dikit dikit loading"
-  // Just return null if we are waiting, so it's a seamless transition.
-  if (isLoading) {
+  // Just return null if we are waiting or if we are about to bounce them.
+  if (isLoading || (data && !isAdmin)) {
     return null;
-  }
-
-  if (data && !isAdmin) {
-    return (
-      <div className="p-6 md:p-10">
-        <UnauthorizedState />
-      </div>
-    );
   }
 
   return <>{children}</>;

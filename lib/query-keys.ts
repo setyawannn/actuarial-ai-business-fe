@@ -27,5 +27,7 @@ export const queryKeys = {
     providerCredentials: ["admin", "provider-credentials"] as const,
     usage: (params?: Record<string, unknown>) =>
       ["admin", "usage", params ?? {}] as const,
+    users: (params?: Record<string, unknown>) =>
+      ["admin", "users", params ?? {}] as const,
   },
 };

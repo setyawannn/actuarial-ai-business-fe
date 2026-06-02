@@ -72,6 +72,7 @@ const data = {
         { title: "Prompts", url: "/admin/prompts" },
         { title: "Providers", url: "/admin/providers" },
         { title: "Usage", url: "/admin/usage" },
+        { title: "Users", url: "/admin/users" },
       ],
     },
   ],
@@ -115,6 +116,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         avatar: "",
       };
 
+  const isAdmin = meData?.role === "admin" || meData?.role === "super_admin";
+
+  const filteredNavMain = data.navMain.filter((item) => {
+    if (item.title === "Admin") return isAdmin;
+    return true;
+  });
+
+  const filteredShortcuts = data.shortcuts.filter((item) => {
+    if (item.url.startsWith("/admin")) return isAdmin;
+    return true;
+  });
+
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
@@ -127,12 +140,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} pathname={pathname} />
+        <NavMain items={filteredNavMain} pathname={pathname} />
         <SidebarSeparator />
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>Shortcuts</SidebarGroupLabel>
           <SidebarMenu>
-            {data.shortcuts.map((item) => {
+            {filteredShortcuts.map((item) => {
               const active = pathname.startsWith(item.url);
 
               return (

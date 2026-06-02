@@ -163,7 +163,7 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
 
   if (detailQuery.data?.status === "needs_more_context") {
     return (
-      <div className="space-y-6 max-w-3xl mx-auto mt-6">
+      <div className="space-y-6 w-full mt-6">
         <ContextEvaluatorForm 
           publicId={publicId} 
           questions={detailQuery.data.context_questions || []} 

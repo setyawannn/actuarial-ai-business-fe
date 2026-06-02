@@ -10,3 +10,20 @@ export async function GET() {
     return NextResponse.json({ success: false, error: { message: "Internal server error" } }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const res = await proxyRequest("/auth/me", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+    return await forwardResponse(res);
+  } catch (error) {
+    console.error("Auth Me Update BFF error:", error);
+    return NextResponse.json(
+      { success: false, error: { message: "Internal server error" } },
+      { status: 500 }
+    );
+  }
+}

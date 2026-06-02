@@ -560,3 +560,23 @@ export interface AdminRunAuditResponse {
   message: string;
   data: AdminRunAuditData;
 }
+
+// ─── Week 5: User Management Types ─────────────────────────────────────
+
+export interface AdminUserListItem {
+  id: number;
+  email: string;
+  full_name: string | null;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminUsersTableData {
+  items: AdminUserListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
