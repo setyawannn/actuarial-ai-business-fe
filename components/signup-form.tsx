@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 
 export function SignupForm({
   className,
@@ -47,9 +48,8 @@ export function SignupForm({
         </Field>
         <Field>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             required
             className="bg-background"
           />
@@ -59,9 +59,8 @@ export function SignupForm({
         </Field>
         <Field>
           <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input
+          <PasswordInput
             id="confirm-password"
-            type="password"
             required
             className="bg-background"
           />

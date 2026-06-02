@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Badge } from "@/components/ui/badge";
 
 export function ProfileClient() {
@@ -142,8 +143,7 @@ export function ProfileClient() {
               <FieldGroup>
                 <Field>
                   <FieldLabel>Password Lama</FieldLabel>
-                  <Input
-                    type="password"
+                  <PasswordInput
                     required
                     placeholder="Masukkan password lama"
                     value={passwordForm.oldPassword}
@@ -152,8 +152,7 @@ export function ProfileClient() {
                 </Field>
                 <Field>
                   <FieldLabel>Password Baru</FieldLabel>
-                  <Input
-                    type="password"
+                  <PasswordInput
                     required
                     placeholder="Masukkan password baru (minimal 8 karakter)"
                     value={passwordForm.newPassword}
@@ -162,8 +161,7 @@ export function ProfileClient() {
                 </Field>
                 <Field>
                   <FieldLabel>Konfirmasi Password Baru</FieldLabel>
-                  <Input
-                    type="password"
+                  <PasswordInput
                     required
                     placeholder="Ketik ulang password baru"
                     value={passwordForm.confirmPassword}

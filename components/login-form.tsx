@@ -16,6 +16,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { LoadingSection } from "@/components/loading-section";
 
 const loginSchema = z.object({
@@ -92,9 +93,8 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             className="bg-background"
             {...register("password")}
             disabled={loginMutation.isPending}

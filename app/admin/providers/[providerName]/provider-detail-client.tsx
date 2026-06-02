@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
@@ -762,8 +763,7 @@ export function ProviderDetailClient({ providerName }: { providerName: string })
                 </Field>
                 <Field>
                   <FieldLabel>Credential Value</FieldLabel>
-                  <Input
-                    type="password"
+                  <PasswordInput
                     value={credentialForm.value}
                     onChange={(event) =>
                       setCredentialForm((current) => ({ ...current, value: event.target.value }))
@@ -805,8 +805,7 @@ export function ProviderDetailClient({ providerName }: { providerName: string })
             <div className="flex-1 space-y-4 px-4 pb-4">
               <Field>
                 <FieldLabel>New value</FieldLabel>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={newCredentialValue}
                   onChange={(event) => setNewCredentialValue(event.target.value)}
                 />
