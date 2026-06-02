@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeftIcon, DatabaseIcon } from "lucide-react";
+import { ArrowLeftIcon, DatabaseIcon, DownloadIcon } from "lucide-react";
+import { toast } from "sonner";
 import { useAnalysisReportQuery } from "@/hooks/use-analysis";
 import { ApiClientError } from "@/types/api";
 import { PageHeader } from "@/components/page-header";
@@ -11,6 +13,7 @@ import { LoadingSection } from "@/components/loading-section";
 import { ErrorCard } from "@/components/error-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 const MarkdownRenderer = dynamic(() => import("@/components/markdown-renderer"), {
   ssr: false,
@@ -23,6 +26,42 @@ function hasText(value?: string | null) {
 
 export function AnalysisReportClient({ publicId }: { publicId: string }) {
   const { data, isLoading, error } = useAnalysisReportQuery(publicId);
+  const [isExporting, setIsExporting] = useState(false);
+
+  async function handleExportPdf() {
+    setIsExporting(true);
+    try {
+      const res = await fetch(`/api/analysis/runs/${publicId}/export-pdf`);
+      if (!res.ok) {
+        throw new Error("Failed to export PDF");
+      }
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      let filename = `Analysis_Report_${publicId}.pdf`;
+      const disposition = res.headers.get("Content-Disposition");
+      if (disposition && disposition.indexOf("filename=") !== -1) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        if (matches != null && matches[1]) { 
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export PDF error:", err);
+      toast.error("Gagal mengunduh PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -65,7 +104,7 @@ export function AnalysisReportClient({ publicId }: { publicId: string }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <PageHeader title={title} description={description} />
 
-        <div className="flex gap-2 shrink-0">
+        <div className="flex flex-wrap gap-2 shrink-0">
           <Button asChild variant="outline" size="sm">
             <Link href={`/analysis/${publicId}`}>
               <ArrowLeftIcon className="mr-2 size-4" />
@@ -77,6 +116,10 @@ export function AnalysisReportClient({ publicId }: { publicId: string }) {
               <DatabaseIcon className="mr-2 size-4" />
               Sources
             </Link>
+          </Button>
+          <Button onClick={handleExportPdf} disabled={isExporting} size="sm">
+            {isExporting ? <Spinner className="mr-2 size-4" /> : <DownloadIcon className="mr-2 size-4" />}
+            {isExporting ? "Exporting..." : "Export PDF"}
           </Button>
         </div>
       </div>
