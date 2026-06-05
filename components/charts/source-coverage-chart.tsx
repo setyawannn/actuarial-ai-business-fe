@@ -1,9 +1,8 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartWrapper } from "@/components/charts/chart-wrapper";
 import { ChartBadge } from "@/components/charts/chart-badge";
-import { ChartFallback } from "@/components/charts/chart-fallback";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -21,74 +20,60 @@ interface SourceCoverageChartProps {
 }
 
 export function SourceCoverageChart({ chartData, isFallback, fallbackReason }: SourceCoverageChartProps) {
-  if (isFallback) {
-    return (
-      <Card>
-        <CardHeader><CardTitle>Source Coverage by Type</CardTitle></CardHeader>
-        <CardContent><ChartFallback reason={fallbackReason ?? "Data sumber tidak tersedia."} /></CardContent>
-      </Card>
-    );
-  }
-
-  const barData = chartData.labels.map((label, i) => ({
+  const barData = chartData?.labels?.map((label, i) => ({
     name: label, count: chartData.datasets[0].data[i], fill: chartData.datasets[0].backgroundColor[i],
-  }));
+  })) ?? [];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Source Coverage by Type</CardTitle>
-          <div className="flex gap-1">
-            <ChartBadge type="source-backed" />
-            <ChartBadge type="confidence" value={chartData.summary.avg_credibility} />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className="text-sm">Total Sources: {chartData.summary.total_sources}</Badge>
-          <Badge variant="outline" className="text-sm">Avg Credibility: {chartData.summary.avg_credibility}%</Badge>
-          <Badge variant="outline" className="text-sm">Level: {chartData.summary.credibility_level}</Badge>
-        </div>
-        <div className="h-56">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" name="Source Count" radius={[4, 4, 0, 0]}>
-                {barData.map((entry, index) => <Cell key={index} fill={entry.fill} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Count</TableHead>
-              <TableHead className="text-right">Avg Credibility</TableHead>
+    <ChartWrapper
+      title="Source Coverage by Type"
+      badgeType="source-backed"
+      isFallback={isFallback}
+      fallbackReason={fallbackReason}
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <Badge variant="outline" className="text-sm">Total Sources: {chartData.summary.total_sources}</Badge>
+        <Badge variant="outline" className="text-sm">Avg Credibility: {chartData.summary.avg_credibility}%</Badge>
+        <Badge variant="outline" className="text-sm">Level: {chartData.summary.credibility_level}</Badge>
+        <ChartBadge type="confidence" value={chartData.summary.avg_credibility} />
+      </div>
+      <div className="h-56">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={barData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="count" name="Source Count" radius={[4, 4, 0, 0]}>
+              {barData.map((entry, index) => <Cell key={index} fill={entry.fill} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Type</TableHead>
+            <TableHead className="text-right">Count</TableHead>
+            <TableHead className="text-right">Avg Credibility</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {chartData.summary.breakdown_by_type.map((item, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <span className="inline-flex items-center gap-2">
+                  <span className="size-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  {item.label}
+                </span>
+              </TableCell>
+              <TableCell className="text-right">{item.count}</TableCell>
+              <TableCell className="text-right">{item.avg_credibility}%</TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {chartData.summary.breakdown_by_type.map((item, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="size-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    {item.label}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">{item.count}</TableCell>
-                <TableCell className="text-right">{item.avg_credibility}%</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+          ))}
+        </TableBody>
+      </Table>
+    </ChartWrapper>
   );
 }

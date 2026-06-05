@@ -309,7 +309,7 @@ export interface PromptRenderPreview {
 }
 // ─── Week 3: Chart Types ───────────────────────────────────────────────
 
-export type ChartType = "risk_domain" | "data_availability" | "source_coverage" | "forecast_scenario";
+export type ChartType = "risk_domain" | "data_availability" | "source_coverage" | "forecast_scenario" | "event_timeline" | "risk_domain_map";
 
 export interface ChartDataItem {
   chart_type: ChartType;

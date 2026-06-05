@@ -1,9 +1,7 @@
 "use client";
 
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartBadge } from "@/components/charts/chart-badge";
-import { ChartFallback } from "@/components/charts/chart-fallback";
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from "recharts";
+import { ChartWrapper } from "@/components/charts/chart-wrapper";
 
 interface RiskDomainData {
   labels: string[];
@@ -19,60 +17,60 @@ interface RiskDomainChartProps {
 }
 
 export function RiskDomainChart({ chartData, isFallback, fallbackReason }: RiskDomainChartProps) {
-  if (isFallback) {
-    return (
-      <Card>
-        <CardHeader><CardTitle>Risk Domain Breakdown</CardTitle></CardHeader>
-        <CardContent><ChartFallback reason={fallbackReason ?? "Data risiko tidak tersedia."} /></CardContent>
-      </Card>
-    );
-  }
-
-  const radarData = chartData.labels.map((label, i) => ({
+  const radarData = chartData?.labels?.map((label, i) => ({
     domain: label,
     score: chartData.datasets[0].data[i],
-  }));
+  })) ?? [];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Risk Domain Breakdown</CardTitle>
-          <ChartBadge type="ai-derived" />
+    <ChartWrapper
+      title="Risk Domain Breakdown"
+      badgeType="ai-derived"
+      isFallback={isFallback}
+      fallbackReason={fallbackReason}
+    >
+      <div className="flex items-center gap-3">
+        <div className="text-3xl font-bold" style={{ color: chartData?.summary?.risk_level_color }}>
+          {chartData?.summary?.overall_risk}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="text-3xl font-bold" style={{ color: chartData.summary.risk_level_color }}>
-            {chartData.summary.overall_risk}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>Overall Risk</p>
-            <p className="font-medium capitalize text-foreground">{chartData.summary.risk_category}</p>
-          </div>
+        <div className="text-sm text-muted-foreground">
+          <p>Overall Risk</p>
+          <p className="font-medium capitalize text-foreground">{chartData?.summary?.risk_category}</p>
         </div>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="domain" tick={{ fontSize: 11 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
-              <Radar name="Risk Score" dataKey="score" stroke={chartData.datasets[0].borderColor[0]} fill={chartData.datasets[0].backgroundColor[0]} fillOpacity={0.3} />
-              <Legend />
-            </RadarChart>
-          </ResponsiveContainer>
+      </div>
+      <div className="h-64 mt-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={radarData}>
+            <PolarGrid strokeOpacity={0.2} />
+            <PolarAngleAxis dataKey="domain" tick={{ fontSize: 11, fill: "currentColor" }} className="text-muted-foreground" />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: "currentColor" }} className="text-muted-foreground opacity-50" />
+            <Radar 
+              name="Risk Score" 
+              dataKey="score" 
+              stroke={chartData?.datasets?.[0]?.borderColor?.[0] || "#8884d8"} 
+              fill={chartData?.datasets?.[0]?.backgroundColor?.[0] || "#8884d8"} 
+              fillOpacity={0.4} 
+              isAnimationActive={true}
+            />
+            <RechartsTooltip 
+              contentStyle={{ borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.8)", color: "#fff", backdropFilter: "blur(4px)" }}
+              itemStyle={{ color: "#fff", fontWeight: "bold" }}
+              formatter={(value: any) => [`${value} / 100`, "Risk Score"]}
+            />
+            <Legend />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+      {chartData.summary.top_drivers.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-foreground">Top Risk Drivers</p>
+          <ul className="space-y-1">
+            {chartData.summary.top_drivers.map((driver, i) => (
+              <li key={i} className="rounded-lg bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground">{driver}</li>
+            ))}
+          </ul>
         </div>
-        {chartData.summary.top_drivers.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">Top Risk Drivers</p>
-            <ul className="space-y-1">
-              {chartData.summary.top_drivers.map((driver, i) => (
-                <li key={i} className="rounded-lg bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground">{driver}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </ChartWrapper>
   );
 }
