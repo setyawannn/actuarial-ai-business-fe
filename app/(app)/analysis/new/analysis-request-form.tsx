@@ -134,7 +134,7 @@ export function AnalysisRequestForm() {
       onSuccess: (result) => {
         setIsRedirecting(true);
         feedback.success("Memulai Analisis...", "Sistem AI sedang bekerja, mohon tunggu sebentar.");
-        router.push(`/analysis/${result.analysis_public_id}?new=true`);
+        router.push(`/analysis/${result.analysis_public_id}?new=true&companyName=${encodeURIComponent(data.company_name)}`);
       },
       onError: (error: Error) => {
         setIsRedirecting(false);

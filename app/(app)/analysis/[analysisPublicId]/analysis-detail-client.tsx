@@ -1,7 +1,8 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -21,7 +22,7 @@ import { ChartSection } from "@/components/charts/chart-section";
 import { ErrorCard } from "@/components/error-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -127,8 +128,10 @@ function renderGapRows(dataGaps: AnalysisDataGap[]) {
 }
 
 export function AnalysisDetailClient({ publicId }: { publicId: string }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isNew = searchParams.get("new") === "true";
+  const queryCompanyName = searchParams.get("companyName");
 
   const detailQuery = useAnalysisDetailQuery(publicId, {
     refetchInterval: (query) => {
@@ -148,9 +151,67 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
     refetchInterval: isRunning ? 3000 : false,
   });
 
+  // Redirect to need-context page if AI is asking for more info
+  React.useEffect(() => {
+    if (detailQuery.data?.status === "needs_more_context") {
+      const nameParam = queryCompanyName ? `?companyName=${encodeURIComponent(queryCompanyName)}` : "";
+      router.replace(`/analysis/${publicId}/need-context${nameParam}`);
+    }
+  }, [detailQuery.data?.status, publicId, router, queryCompanyName]);
+
+  // Handle failure state explicitly with a user-friendly UI instead of generic error
+  if (detailQuery.data?.status === "failed") {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Analisis Gagal" description="Proses analisis AI terhenti karena adanya kendala." />
+        <Card className="border-destructive/20 bg-destructive/5 shadow-lg shadow-destructive/5 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-destructive/10 to-transparent border-b pb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive border border-destructive/20 shadow-inner">
+                <AlertTriangleIcon className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-bold text-destructive">Gagal Menjalankan Analisis</CardTitle>
+                <CardDescription className="text-sm text-muted-foreground mt-0.5">
+                  AI kami tidak dapat menyelesaikan analisis untuk perusahaan ini.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Kesalahan berikut dilaporkan oleh sistem analisis AI. Anda dapat mencoba mengajukan analisis kembali dengan data yang lebih spesifik atau memeriksa konektivitas data eksternal.
+            </p>
+            <div className="rounded-lg bg-background p-4 border border-border/70 font-mono text-xs text-destructive max-w-3xl leading-relaxed whitespace-pre-wrap">
+              {detailQuery.data.error_message || "Kesalahan internal sistem analisis AI (Unknown Error)."}
+            </div>
+            <div className="pt-2 flex gap-3">
+              <Button asChild variant="outline">
+                <Link href="/analysis/new">
+                  Mulai Analisis Baru
+                </Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href="/dashboard">
+                  Kembali ke Dashboard
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (detailQuery.isLoading || (isLoading && isRunning)) {
     if (isRunning) {
-      return <AiAnalysisWorkspace />;
+      return (
+        <AiAnalysisWorkspace 
+          companyName={queryCompanyName || data?.report_summary?.company_name}
+          status={detailQuery.data?.status || "initializing"}
+          progress={detailQuery.data?.progress || 0}
+        />
+      );
     }
     return (
       <div className="space-y-6">
@@ -161,20 +222,21 @@ export function AnalysisDetailClient({ publicId }: { publicId: string }) {
     );
   }
 
+  // During redirect to need-context page, render workspace as transition state
   if (detailQuery.data?.status === "needs_more_context") {
     return (
-      <div className="space-y-6 w-full mt-6">
-        <ContextEvaluatorForm 
-          publicId={publicId} 
-          questions={detailQuery.data.context_questions || []} 
-        />
-      </div>
+      <AiAnalysisWorkspace 
+        companyName={queryCompanyName || data?.report_summary?.company_name}
+        status={detailQuery.data?.status}
+        progress={detailQuery.data?.progress}
+      />
     );
   }
 
   if (isRunning) {
     return (
       <AiAnalysisWorkspace 
+        companyName={queryCompanyName || data?.report_summary?.company_name}
         status={detailQuery.data?.status}
         progress={detailQuery.data?.progress}
       />
